@@ -46,7 +46,7 @@ h1,h2,h3,h4{font-weight:800;line-height:1.12;letter-spacing:-.02em;margin:0}
 .lang-switch button{border:0;background:transparent;padding:7px 14px;font-weight:800;font-size:13.5px;cursor:pointer;color:#43586E;min-height:40px;line-height:1.4}
 .lang-switch button.active{background:var(--navy);color:#fff}
 .lang-switch button[data-setlang="ur"]{font-family:"Noto Nastaliq Urdu",serif;font-size:14px;padding-top:4px;padding-bottom:10px}
-.lang-switch.in-menu{align-self:flex-start;margin:4px 0 6px}
+.lang-switch.in-menu{display:none;align-self:flex-start;margin:4px 0 6px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:12px;font-weight:800;font-size:15px;border:1px solid transparent;cursor:pointer;min-height:48px;text-align:center}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--bluedark)}
 .btn-gold{background:var(--gold);color:#12263A}.btn-gold:hover{background:var(--gold2)}
@@ -219,6 +219,28 @@ footer ul{list-style:none;padding:0;margin:0;line-height:2;font-size:14.5px}
 .wa-float{position:fixed;right:18px;bottom:18px;z-index:80;width:58px;height:58px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.28)}
 .wa-float svg{width:30px;height:30px;fill:#fff}
 .wa-ico{width:18px;height:18px;fill:currentColor;flex-shrink:0}
+/* ---------- Account / Sign in ---------- */
+.auth-slot{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.auth-slot .auth-email{font-size:13.5px;font-weight:700;color:#0A2A44;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-slot-menu{display:none;padding:6px 0 2px}
+.auth-modal{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:18px}
+.auth-modal[hidden]{display:none}
+.auth-backdrop{position:absolute;inset:0;background:rgba(6,28,48,.55)}
+.auth-card{position:relative;background:var(--surface);color:var(--ink);border-radius:18px;padding:26px;width:100%;max-width:400px;box-shadow:var(--shadow-lg)}
+.auth-card h3{font-size:21px;margin:0 26px 4px 0}
+.auth-card .auth-sub{margin:0 0 16px;color:var(--muted);font-size:14px}
+.auth-close{position:absolute;top:12px;right:12px;width:38px;height:38px;min-height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:15px;line-height:1}
+[dir="rtl"] .auth-close{right:auto;left:12px}
+[dir="rtl"] .auth-card h3{margin:0 0 4px 26px}
+.auth-tabs{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:16px}
+.auth-tabs button{flex:1;border:0;background:transparent;padding:9px 10px;font-weight:800;font-size:14px;cursor:pointer;color:var(--ink2);min-height:42px}
+.auth-tabs button.active{background:var(--navy);color:#fff}
+.auth-card .field{margin-bottom:12px}
+.auth-msg{font-size:13.5px;border-radius:10px;padding:10px 12px;margin:0 0 12px;line-height:1.55}
+.auth-msg.err{background:#FBE3E0;color:#8E2318}
+.auth-msg.ok{background:#E2F4E9;color:#14632F}
+@media (prefers-color-scheme: dark){ .auth-msg.err{background:#3D1712;color:#F2A49C} .auth-msg.ok{background:#12351F;color:#8FE3AC} }
+@media(max-width:620px){ #authSlot{display:none} .auth-slot .auth-email{max-width:110px} }
 /* ---------- Urdu mode: Noto Nastaliq Urdu, readable size & spacing ---------- */
 html[lang="ur"] body{font-family:"Noto Nastaliq Urdu","Manrope",serif;font-size:18px;line-height:2.0}
 html[lang="ur"] h1,html[lang="ur"] h2,html[lang="ur"] h3,html[lang="ur"] h4{font-family:"Noto Nastaliq Urdu",serif;letter-spacing:0;line-height:1.9;font-weight:700}
@@ -255,6 +277,8 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
 @media(max-width:1080px){
   .nav-links{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;background:#FFFFFF;border:1px solid #DFE8F0;border-radius:16px;padding:10px;flex-direction:column;align-items:stretch;box-shadow:var(--shadow-lg)}
   .nav-links.open{display:flex}.nav-links a{padding:12px}
+  .nav-links .auth-slot-menu{display:flex}
+  .nav-links .lang-switch.in-menu{display:inline-flex}
   .menu-btn{display:grid;place-items:center}
   .hero-grid{grid-template-columns:1fr;padding:40px 0 56px}
   .elig-grid{grid-template-columns:1fr}
@@ -291,11 +315,19 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
     <button type="button" data-setlang="en" class="active">EN</button>
     <button type="button" data-setlang="ur">اردو</button>
   </div>
+  <div class="auth-slot" id="authSlot">
+    <button type="button" class="btn btn-navy btn-sm auth-open" data-i18n="auth_signin">Sign In</button>
+    <span class="auth-when-in" style="display:none;align-items:center;gap:10px"><span class="auth-email ltr"></span><button type="button" class="btn btn-outline btn-sm auth-out" data-i18n="auth_out">Sign out</button></span>
+  </div>
   <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
   <nav class="nav-links" id="navLinks">
     <div class="lang-switch in-menu" role="group" aria-label="Language / زبان">
       <button type="button" data-setlang="en" class="active">EN</button>
       <button type="button" data-setlang="ur">اردو</button>
+    </div>
+    <div class="auth-slot auth-slot-menu">
+      <button type="button" class="btn btn-navy btn-sm auth-open" data-i18n="auth_signin">Sign In</button>
+      <span class="auth-when-in" style="display:none;align-items:center;gap:10px"><span class="auth-email ltr"></span><button type="button" class="btn btn-outline btn-sm auth-out" data-i18n="auth_out">Sign out</button></span>
     </div>
     <a href="#services" data-i18n="nav_services">Services</a><a href="#eligibility" data-i18n="nav_elig">Eligibility Analysis</a><a href="#destinations" data-i18n="nav_dest">Destinations</a><a href="#finder" data-i18n="nav_study">Study Abroad</a><a href="#process" data-i18n="nav_process">Process</a><a href="#about" data-i18n="nav_about">About</a><a href="#faq" data-i18n="nav_faq">FAQ</a><a href="#contact" data-i18n="nav_contact">Contact</a>
     <a href="#eligibility" class="btn btn-blue btn-sm" data-i18n="nav_cta">Free Eligibility Analysis</a>
@@ -383,7 +415,7 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
     <div class="elig-grid">
       <form class="elig-form" id="eligForm" novalidate>
         <h3 data-i18n="ef_title">Enter Your Details</h3>
-        <p data-i18n="ef_sub">Give honest information — the more truthful it is, the more accurate the analysis. This information is not saved on the website; the result is generated only in your browser.</p>
+        <p data-i18n="ef_sub">Give honest information — the more truthful it is, the more accurate the analysis. Your submission is saved securely, and our team will also contact you on WhatsApp.</p>
         <div class="f-grid">
           <div><label class="flabel" for="eName" data-i18n="lbl_name">Full name *</label><input id="eName" data-i18n-ph="ph_name" placeholder="Your full name"></div>
           <div><label class="flabel" for="ePhone" data-i18n="lbl_wa">WhatsApp number *</label><input id="ePhone" placeholder="03XX XXXXXXX" inputmode="tel"></div>
@@ -401,7 +433,7 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
         </div>
         <p id="eligError" style="color:#C0392B;font-size:13.5px;display:none;margin:10px 0 0" data-i18n="err_elig">Please enter your name and WhatsApp number — and make sure every other field is selected.</p>
         <button type="submit" class="btn btn-gold" style="width:100%;margin-top:14px" data-i18n="ef_btn">Run My Free Analysis →</button>
-        <div class="doc-note" data-i18n-html="ef_docnote">📄 <strong>About documents:</strong> Documents are <strong>not</strong> uploaded or saved on this website. After the analysis, when you contact us on WhatsApp, our team will ask for your documents on WhatsApp — passport, bank statements, educational documents, experience letters, etc. — and a complete document-based analysis will be prepared from them.</div>
+        <div class="doc-note" data-i18n-html="ef_docnote">📄 <strong>About documents:</strong> Your analysis submission is saved securely. Documents themselves are shared on WhatsApp, not uploaded here — after the analysis, when you contact us on WhatsApp, our team will ask for your documents — passport, bank statements, educational documents, experience letters, etc. — and a complete document-based analysis will be prepared from them.</div>
       </form>
       <div>
         <div class="elig-result" id="eligResult" role="status" aria-live="polite"></div>
@@ -548,7 +580,7 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
     <div>
       <div class="kicker" data-i18n="ct_kicker">Get Started</div>
       <h2 style="font-size:clamp(30px,3.8vw,38px);margin:10px 0 12px" data-i18n="ct_h2">Book your consultation today</h2>
-      <p style="color:var(--ink2)" data-i18n="ct_p">Fill in the form and choose your team member — on submitting, your message will be prepared and will open directly in that member's WhatsApp. Your documents will also be requested from you on WhatsApp; this website does not save any document.</p>
+      <p style="color:var(--ink2)" data-i18n="ct_p">Fill in the form and choose your team member — on submitting, your details are saved securely and your message will be prepared and will open directly in that member's WhatsApp. Your documents will also be requested from you on WhatsApp.</p>
       <div class="card" style="margin-top:18px"><strong>Borderway International Immigration Services</strong><p style="margin-top:6px"><span data-i18n="ct_founder">Founder</span>: <strong>Arshad Khan Aastik</strong> — <a href="tel:+923149891182" style="color:var(--blue);font-weight:700"><span class="ltr">+92 314 9891182</span></a><br>Shameer Ahmed — <a href="tel:+923705701578" style="color:var(--blue);font-weight:700"><span class="ltr">+92 370 5701578</span></a><br>Mehran Ahmed — <a href="tel:+923118252750" style="color:var(--blue);font-weight:700"><span class="ltr">+92 311 8252750</span></a><br><span data-i18n="ct_focus">Core Focus</span>: USA • Canada<br><span data-i18n="ct_appt">Guidance in Urdu &amp; English — Consultation by appointment</span></p></div>
       <div class="notice" style="margin-top:14px" data-i18n-html="ct_notice">⏱️ <strong>Don't delay:</strong> USA interview appointments and Canada intake dates fill up quickly — if your profile is prepared early, applying on time becomes much easier.</div>
     </div>
@@ -570,7 +602,7 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn btn-navy" id="copyBtn" style="flex:1" data-i18n="lf_copy">Copy Message</button><a class="btn btn-wa" id="waLink" href="#" target="_blank" rel="noopener" style="flex:1" data-i18n="lf_openwa">Open WhatsApp</a></div>
         <p id="copyNote" style="font-size:13px;color:var(--green);display:none;margin:8px 0 0" data-i18n="lf_copied">✓ Copied! Now paste it in WhatsApp and send.</p>
       </div>
-      <p style="font-size:12.5px;color:var(--muted);margin:12px 0 0" data-i18n="lf_note">Submitting this form only prepares a message for you — nothing is sent automatically, and nothing is saved on this website.</p>
+      <p style="font-size:12.5px;color:var(--muted);margin:12px 0 0" data-i18n="lf_note">When you submit, your details are saved securely and a ready-made WhatsApp message is prepared for you — nothing is sent automatically; you press send yourself.</p>
     </form>
   </div>
 </div></section>
@@ -587,6 +619,26 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
 </div></footer>
 
 <a class="wa-float" href="https://wa.me/923149891182?text=Assalam-o-Alaikum%2C%20I%20would%20like%20a%20visa%20consultation%20from%20Borderway%20International." target="_blank" rel="noopener" aria-label="Chat on WhatsApp — Arshad Khan Aastik"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5L8.9 6.6C8.7 6.1 8.5 6.2 8.3 6.2H7.6c-.2 0-.6.1-.9.4-.3.4-1.2 1.2-1.2 3s1.2 3.5 1.4 3.7c.2.2 2.4 3.6 5.7 5.1.8.3 1.4.6 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4M12 21.8a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4a9.8 9.8 0 1 1 8.3 4.6m8.3-18A11.8 11.8 0 0 0 12 .2 11.8 11.8 0 0 0 .3 12c0 2.1.5 4.1 1.6 5.9L.1 24l6.3-1.7A11.8 11.8 0 0 0 12 23.8h0A11.8 11.8 0 0 0 20.3 3.8"/></svg></a>
+
+<!-- SIGN IN / SIGN UP MODAL -->
+<div class="auth-modal" id="authModal" hidden role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="auth-backdrop" data-auth-close></div>
+  <div class="auth-card">
+    <button type="button" class="auth-close" data-auth-close aria-label="Close">✕</button>
+    <h3 id="authTitle" data-i18n="auth_title">Your Borderway Account</h3>
+    <p class="auth-sub" data-i18n="auth_sub">Sign in so your assessment submissions are saved to your account. New here? Create a free account — we will email you a confirmation link.</p>
+    <div class="auth-tabs" role="group" aria-label="Sign in or sign up">
+      <button type="button" id="tabSignIn" class="active" data-i18n="auth_signin">Sign In</button>
+      <button type="button" id="tabSignUp" data-i18n="auth_signup">Sign Up</button>
+    </div>
+    <form id="authForm" novalidate>
+      <div class="field"><label for="authEmailInput" data-i18n="auth_email">Email</label><input id="authEmailInput" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="authPassInput" data-i18n="auth_password">Password</label><input id="authPassInput" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <p id="authMsg" class="auth-msg" style="display:none"></p>
+      <button type="submit" class="btn btn-blue" id="authSubmit" style="width:100%" data-i18n="auth_signin">Sign In</button>
+    </form>
+  </div>
+</div>
 
 <script>
 /* ---------- Menu ---------- */
@@ -619,6 +671,13 @@ nav_about:"ہمارے بارے میں",
 nav_faq:"عام سوالات",
 nav_contact:"رابطہ",
 nav_cta:"مفت Eligibility Analysis",
+auth_signin:"سائن ان",
+auth_signup:"سائن اپ",
+auth_out:"سائن آؤٹ",
+auth_title:"آپ کا Borderway اکاؤنٹ",
+auth_sub:"سائن ان کریں تاکہ آپ کی assessment درخواستیں آپ کے اکاؤنٹ میں محفوظ ہوں۔ نئے ہیں؟ مفت اکاؤنٹ بنائیں — ہم آپ کو تصدیق کا لنک ای میل کریں گے۔",
+auth_email:"ای میل",
+auth_password:"پاس ورڈ",
 hero_pill:"مشاورت کی بکنگ جاری ہے — پاکستان سے USA اور Canada",
 hero_h1:"<span class=\"gold\">USA</span> اور <span class=\"sky\">Canada</span> کی طرف آپ کا دروازہ",
 hero_lead:"آپ کے خواب، ہماری رہنمائی — سرحدوں سے آگے آپ کے سفر کی بنیاد۔ Visit، Study، Work، Business اور Family ویزے — ایمانداری سے منصوبہ بندی اور مکمل تیاری کے ساتھ، صرف دو منزلوں پر مکمل توجہ۔",
@@ -667,7 +726,7 @@ el_kicker:"★ مفت Eligibility Analysis — ہماری خاص سروس",
 el_h2:"اپلائی کرنے سے پہلے — سرکاری معیار پر — جان لیں کہ آپ کہاں کھڑے ہیں",
 el_sub:"اپنی تفصیلات بھریں — عمر، تعلیم، تجربہ، زبان کا اسکور، فنڈز، سفر کی تاریخ اور انکار کی کوئی تفصیل۔ آپ کو فوراً واضح نتیجہ ملے گا: <strong style=\"color:#fff\">Strong Profile</strong>، <strong style=\"color:#fff\">Needs Improvement</strong> یا <strong style=\"color:#fff\">Not Eligible Yet</strong> — ہر عامل کی وجہ اور Canada (IRCC — canada.ca) اور USA (travel.state.gov / uscis.gov) کی سرکاری شرائط کے حوالوں کے ساتھ۔ پھر اپنی تفصیلات ٹیم کو WhatsApp پر بھیجیں — آپ کی دستاویزات بھی WhatsApp پر ہی مانگی جائیں گی، تاکہ دستاویزات پر مبنی مکمل تجزیہ ہو سکے۔",
 ef_title:"اپنی تفصیلات درج کریں",
-ef_sub:"سچی معلومات دیں — جتنی سچی ہوگی، تجزیہ اتنا ہی درست ہوگا۔ یہ معلومات ویب سائٹ پر محفوظ نہیں ہوتی؛ نتیجہ صرف آپ کے براؤزر میں بنتا ہے۔",
+ef_sub:"سچی معلومات دیں — جتنی سچی ہوگی، تجزیہ اتنا ہی درست ہوگا۔ آپ کی درخواست محفوظ طریقے سے محفوظ ہو جاتی ہے، اور ہماری ٹیم آپ سے WhatsApp پر بھی رابطہ کرے گی۔",
 lbl_wa:"WhatsApp نمبر *",
 lbl_dest_req:"منزل *",
 opt_both:"دونوں — Canada + USA",
@@ -704,7 +763,7 @@ lbl_refdetail:"انکار کی تفصیل (اگر ہوا تھا — ملک، س�
 ph_refdetail:"مثلاً: Canada visitor visa 2023 میں مسترد ہوا — وجوہات فنڈز اور تعلقات بتائی گئیں...",
 err_elig:"براہ کرم اپنا نام اور WhatsApp نمبر درج کریں — اور یقینی بنائیں کہ باقی تمام فیلڈز منتخب ہیں۔",
 ef_btn:"میرا مفت تجزیہ کریں ←",
-ef_docnote:"📄 <strong>دستاویزات کے بارے میں:</strong> اس ویب سائٹ پر دستاویزات اپ لوڈ یا محفوظ <strong>نہیں</strong> ہوتیں۔ تجزیے کے بعد جب آپ ہم سے WhatsApp پر رابطہ کریں گے، تو ہماری ٹیم آپ سے دستاویزات WhatsApp پر ہی مانگے گی — پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات، تجربے کے خطوط وغیرہ — اور ان کی بنیاد پر دستاویزات پر مبنی مکمل تجزیہ تیار کیا جائے گا۔",
+ef_docnote:"📄 <strong>دستاویزات کے بارے میں:</strong> آپ کی تجزیے کی درخواست محفوظ طریقے سے محفوظ ہو جاتی ہے۔ دستاویزات یہاں اپ لوڈ نہیں ہوتیں، وہ WhatsApp پر شیئر ہوتی ہیں — تجزیے کے بعد جب آپ ہم سے WhatsApp پر رابطہ کریں گے، تو ہماری ٹیم آپ سے دستاویزات WhatsApp پر ہی مانگے گی — پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات، تجربے کے خطوط وغیرہ — اور ان کی بنیاد پر دستاویزات پر مبنی مکمل تجزیہ تیار کیا جائے گا۔",
 ob_h:"سرکاری شرائط — ایک نظر میں",
 ob_1:"<strong style=\"color:#fff\">Canada — Express Entry کے لیے فنڈز کا ثبوت (IRCC):</strong> اکیلے درخواست گزار کے لیے کم از کم <strong style=\"color:#fff\">CAD $15,263</strong> (4 افراد کے خاندان کے لیے: $28,362) — IRCC جدول، 7 جولائی 2025 کو اپ ڈیٹ ہوا۔ FSW کا 67 نکاتی انتخابی گرڈ اور CRS درجہ بندی الگ سے لاگو ہوتی ہے۔",
 ob_2:"<strong style=\"color:#fff\">Canada — Study Permit:</strong> DLI سے قبولیت کا خط + پہلے سال کی فیس + رہائش کے اخراجات <strong style=\"color:#fff\">CAD $22,895</strong> (1 ستمبر 2025 سے، Quebec کے علاوہ؛ 1 ستمبر 2026 سے $23,448) + سفر۔",
@@ -814,7 +873,7 @@ cta_p:"مفت Eligibility Analysis بھریں — سرکاری معیار پر �
 cta_wa:"WhatsApp پر رابطہ کریں",
 ct_kicker:"آغاز کریں",
 ct_h2:"آج ہی اپنی مشاورت بک کریں",
-ct_p:"فارم بھریں اور اپنا ٹیم ممبر منتخب کریں — جمع کرانے پر آپ کا پیغام تیار ہو جائے گا اور براہ راست اسی ممبر کے WhatsApp میں کھلے گا۔ آپ کی دستاویزات بھی آپ سے WhatsApp پر ہی مانگی جائیں گی؛ یہ ویب سائٹ کوئی دستاویز محفوظ نہیں کرتی۔",
+ct_p:"فارم بھریں اور اپنا ٹیم ممبر منتخب کریں — جمع کرانے پر آپ کی تفصیلات محفوظ طریقے سے محفوظ ہو جائیں گی اور آپ کا پیغام تیار ہو کر براہ راست اسی ممبر کے WhatsApp میں کھلے گا۔ آپ کی دستاویزات بھی آپ سے WhatsApp پر ہی مانگی جائیں گی۔",
 ct_founder:"بانی",
 ct_focus:"بنیادی توجہ",
 ct_appt:"اردو اور English میں رہنمائی — مشاورت اپائنٹمنٹ سے",
@@ -833,7 +892,7 @@ lf_ready:"آپ کا پیغام تیار ہے — اسے کاپی کریں، یا
 lf_copy:"پیغام کاپی کریں",
 lf_openwa:"WhatsApp کھولیں",
 lf_copied:"✓ کاپی ہو گیا! اب اسے WhatsApp میں پیسٹ کر کے بھیج دیں۔",
-lf_note:"یہ فارم جمع کرانے سے صرف آپ کے لیے ایک پیغام تیار ہوتا ہے — کچھ بھی خود بخود نہیں بھیجا جاتا، اور اس ویب سائٹ پر کچھ محفوظ نہیں ہوتا۔",
+lf_note:"فارم جمع کرانے پر آپ کی تفصیلات محفوظ طریقے سے محفوظ ہو جاتی ہیں اور آپ کے لیے ایک تیار شدہ WhatsApp پیغام بن جاتا ہے — کچھ بھی خود بخود نہیں بھیجا جاتا؛ بھیجنا آپ خود دباتے ہیں۔",
 ft_about:"Arshad Khan Aastik کی ویزا اور امیگریشن کنسلٹنسی — پاکستان کے کلائنٹس کو USA اور Canada کے لیے مضبوط، ایماندارانہ درخواستیں تیار کرنے میں مدد دیتی ہے۔",
 ft_links:"فوری لنکس",
 ft_finder:"یونیورسٹی فائنڈر",
@@ -904,7 +963,7 @@ scoreLabel:'Profile Strength (indicative)',reqHead:'Official Requirements — ',
 policyLine:'Policy snapshot: checked against official sources on 26 November 2026 (IRCC — canada.ca; US Dept. of State — travel.state.gov; USCIS — uscis.gov). Canada\'s proof of funds table was last updated 7 July 2025; study permit living expenses are CAD $22,895 from 1 Sep 2025 and CAD $23,448 from 1 Sep 2026. Figures can change over time — the team will confirm the current figures in your consultation.',
 disclaimer:'<strong>Disclaimer:</strong> This analysis is for guidance only and is based on officially published criteria. The final visa decision is always made by the embassy / immigration officer — Borderway International does not guarantee any visa. A complete analysis will be done by looking at your actual documents, which the team will request on WhatsApp.',
 waBtn:'Send My Details on WhatsApp — for a Document Analysis →',
-waNotePre:'Your details and result will go to ',waNotePost:' on WhatsApp. The team will then ask you for your documents (passport, bank statements, educational documents, etc.) on WhatsApp — nothing is saved on this website.',
+waNotePre:'Your details and result will go to ',waNotePost:' on WhatsApp. Your submission is also saved securely. The team will then ask you for your documents (passport, bank statements, educational documents, etc.) on WhatsApp.',
 catLabels:{Visit:'Visit / Tourist',Study:'Study',Work:'Work / Skilled',Business:'Business',Family:'Family / Super Visa'},
 emptyUni:'No university matched these filters — try changing the filters, or ask the team on WhatsApp.',
 fieldsLabel:'Fields:',tuitionLabel:'Tuition:',slAdd:'+ Shortlist',slAdded:'✓ Shortlisted',
@@ -918,7 +977,7 @@ scoreLabel:'پروفائل کی مضبوطی (اشاراتی)',reqHead:'سرکا
 policyLine:'پالیسی کا خلاصہ: 26 نومبر 2026 کو سرکاری ذرائع (IRCC — canada.ca؛ US Dept. of State — travel.state.gov؛ USCIS — uscis.gov) سے جانچا گیا۔ Canada کے فنڈز کے ثبوت کا جدول آخری بار 7 جولائی 2025 کو اپ ڈیٹ ہوا؛ Study Permit کے رہائشی اخراجات 1 ستمبر 2025 سے CAD $22,895 اور 1 ستمبر 2026 سے CAD $23,448 ہیں۔ اعداد و شمار وقت کے ساتھ بدل سکتے ہیں — ٹیم آپ کی مشاورت میں موجودہ اعداد و شمار کی تصدیق کرے گی۔',
 disclaimer:'<strong>دستبرداری:</strong> یہ تجزیہ صرف رہنمائی کے لیے ہے اور سرکاری طور پر شائع شدہ معیار پر مبنی ہے۔ ویزا کا حتمی فیصلہ ہمیشہ سفارت خانہ / امیگریشن آفیسر کرتا ہے — Borderway International کسی ویزا کی گارنٹی نہیں دیتا۔ مکمل تجزیہ آپ کی اصل دستاویزات دیکھ کر ہوگا، جو ٹیم WhatsApp پر مانگے گی۔',
 waBtn:'میری تفصیلات WhatsApp پر بھیجیں — دستاویزات کے تجزیے کے لیے ←',
-waNotePre:'اس سے آپ کی تفصیلات اور نتیجہ ',waNotePost:' کو WhatsApp پر جائے گا۔ پھر ٹیم آپ سے دستاویزات (پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات وغیرہ) WhatsApp پر مانگے گی — ویب سائٹ پر کچھ محفوظ نہیں ہوتا۔',
+waNotePre:'اس سے آپ کی تفصیلات اور نتیجہ ',waNotePost:' کو WhatsApp پر جائے گا۔ آپ کی درخواست محفوظ طریقے سے محفوظ بھی ہو جاتی ہے۔ پھر ٹیم آپ سے دستاویزات (پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات وغیرہ) WhatsApp پر مانگے گی۔',
 catLabels:{Visit:'Visit / Tourist',Study:'Study',Work:'Work / Skilled',Business:'Business',Family:'Family / Super Visa'},
 emptyUni:'ان فلٹرز پر کوئی یونیورسٹی نہیں ملی — فلٹرز بدل کر دیکھیں، یا WhatsApp پر ٹیم سے پوچھیں۔',
 fieldsLabel:'شعبے:',tuitionLabel:'فیس:',slAdd:'+ شارٹ لسٹ',slAdded:'✓ شارٹ لسٹ ہو گئی',
@@ -1183,6 +1242,7 @@ document.getElementById('eligForm').addEventListener('submit',function(e){
   if(!d.name||!d.phone){ err.style.display='block'; return; } err.style.display='none';
   window.__lastElig=d;
   renderElig(d,true);
+  if(window.bwSaveElig) window.bwSaveElig(d);
 });
 
 /* ---------- University finder ---------- */
@@ -1250,6 +1310,7 @@ document.getElementById('leadForm').addEventListener('submit',function(e){
   document.getElementById('waLink').href='https://wa.me/'+person+'?text='+encodeURIComponent(text);
   document.getElementById('formSuccess').style.display='block';
   document.getElementById('formSuccess').scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(window.bwSaveContact) window.bwSaveContact({name:name,phone:phone,country:country,visa:visa,msg:msg});
 });
 document.getElementById('copyBtn').addEventListener('click',function(){
   var ta=document.getElementById('readyMsg'); ta.select();
@@ -1260,6 +1321,140 @@ document.getElementById('copyBtn').addEventListener('click',function(){
 
 /* ---------- Apply saved language on load ---------- */
 if(LANG==='ur') setLang('ur',true);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ---------- Supabase connection + account + database saves ----------
+   Uses the publishable (public) key only — safe for browser use.
+   Form submissions save to the database IN ADDITION to the existing
+   WhatsApp flow, which is unchanged. Anonymous inserts never chain
+   .select(): with RLS, INSERT ... RETURNING only returns rows the
+   caller may also SELECT, so we confirm success without asking for
+   the row back. The lead id is generated here in the browser so the
+   matching assessment row can reference it. */
+var sb=null, bwUser=null;
+try{
+  if(window.supabase) sb=window.supabase.createClient('https://sixecmcrjibhuacwvtgc.supabase.co','sb_publishable_h-GizdS7h_3y9oHkaOEZfw_m8t-zRUv');
+}catch(e){ sb=null; }
+
+function bwUuid(){
+  if(window.crypto&&crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){ var r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8); return v.toString(16); });
+}
+
+/* ----- Header account state ----- */
+function renderAuth(){
+  var signedIn=!!bwUser;
+  document.querySelectorAll('.auth-open').forEach(function(b){ b.style.display=signedIn?'none':''; });
+  document.querySelectorAll('.auth-when-in').forEach(function(s){ s.style.display=signedIn?'inline-flex':'none'; });
+  document.querySelectorAll('.auth-email').forEach(function(s){ s.textContent=bwUser?bwUser.email:''; s.title=bwUser?bwUser.email:''; });
+}
+document.querySelectorAll('.auth-out').forEach(function(b){
+  b.addEventListener('click',function(){ if(sb) sb.auth.signOut(); });
+});
+if(sb){
+  sb.auth.getSession().then(function(r){ bwUser=(r.data&&r.data.session)?r.data.session.user:null; renderAuth(); });
+  sb.auth.onAuthStateChange(function(ev,session){ bwUser=session?session.user:null; renderAuth(); });
+}
+renderAuth();
+
+/* ----- Sign in / sign up modal ----- */
+var AUTH_STR={
+en:{need:'Please enter your email and a password (at least 6 characters).',confirm:'Account created — please check your email and click the confirmation link, then sign in.',signedin:'Signed in successfully.',failed:'Something went wrong. Please try again.',busy:'Please wait…',signin:'Sign In',signup:'Sign Up'},
+ur:{need:'براہ کرم اپنی ای میل اور پاس ورڈ درج کریں (کم از کم 6 حروف)۔',confirm:'اکاؤنٹ بن گیا — براہ کرم اپنی ای میل چیک کریں اور تصدیقی لنک پر کلک کریں، پھر سائن ان کریں۔',signedin:'کامیابی سے سائن ان ہو گیا۔',failed:'کچھ غلط ہو گیا۔ براہ کرم دوبارہ کوشش کریں۔',busy:'براہ کرم انتظار کریں…',signin:'سائن ان',signup:'سائن اپ'}
+};
+function as(k){ return (AUTH_STR[LANG]&&AUTH_STR[LANG][k])||AUTH_STR.en[k]; }
+var authModal=document.getElementById('authModal'), authForm=document.getElementById('authForm'),
+    authEmailInput=document.getElementById('authEmailInput'), authPassInput=document.getElementById('authPassInput'),
+    authMsg=document.getElementById('authMsg'), authSubmit=document.getElementById('authSubmit'),
+    tabSignIn=document.getElementById('tabSignIn'), tabSignUp=document.getElementById('tabSignUp'), authMode='in';
+function showAuthMsg(txt,kind){ authMsg.textContent=txt; authMsg.className='auth-msg '+kind; authMsg.style.display='block'; }
+function hideAuthMsg(){ authMsg.style.display='none'; }
+function setAuthMode(m){
+  authMode=m;
+  tabSignIn.classList.toggle('active',m==='in'); tabSignUp.classList.toggle('active',m==='up');
+  authSubmit.textContent=(m==='in')?as('signin'):as('signup');
+  authPassInput.setAttribute('autocomplete',m==='in'?'current-password':'new-password');
+  hideAuthMsg();
+}
+function openAuth(){ setAuthMode('in'); authModal.hidden=false; setTimeout(function(){ authEmailInput.focus(); },30); }
+function closeAuth(){ authModal.hidden=true; }
+document.querySelectorAll('.auth-open').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(typeof navLinks!=='undefined') navLinks.classList.remove('open');
+    if(typeof menuBtn!=='undefined') menuBtn.textContent='☰';
+    openAuth();
+  });
+});
+document.querySelectorAll('[data-auth-close]').forEach(function(el){ el.addEventListener('click',closeAuth); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!authModal.hidden) closeAuth(); });
+tabSignIn.addEventListener('click',function(){ setAuthMode('in'); });
+tabSignUp.addEventListener('click',function(){ setAuthMode('up'); });
+document.querySelectorAll('[data-setlang]').forEach(function(b){ b.addEventListener('click',function(){ setAuthMode(authMode); }); });
+authForm.addEventListener('submit',function(e){
+  e.preventDefault();
+  if(!sb){ showAuthMsg(as('failed'),'err'); return; }
+  var email=authEmailInput.value.trim(), pass=authPassInput.value;
+  if(!email||pass.length<6){ showAuthMsg(as('need'),'err'); return; }
+  authSubmit.disabled=true; showAuthMsg(as('busy'),'ok');
+  var p=(authMode==='up') ? sb.auth.signUp({email:email,password:pass}) : sb.auth.signInWithPassword({email:email,password:pass});
+  p.then(function(res){
+    authSubmit.disabled=false;
+    if(res.error){ showAuthMsg(res.error.message,'err'); return; }
+    if(authMode==='up'){
+      if(res.data&&res.data.session){ closeAuth(); }
+      else { showAuthMsg(as('confirm'),'ok'); setAuthMode('in'); showAuthMsg(as('confirm'),'ok'); }
+    } else { closeAuth(); }
+  },function(){ authSubmit.disabled=false; showAuthMsg(as('failed'),'err'); });
+});
+
+/* ----- Save: Free Eligibility Analysis -> leads + assessments ----- */
+var AGE_NUM={'18-29':24,'30-39':35,'40-49':45,'50+':55,'under18':17};
+var EXP_NUM={none:0,'lt1':0,'1-3':2,'4-6':5,'7plus':8};
+var IELTS_NUM={notTaken:null,below6:5.5,'6-6.5':6.5,'7-7.5':7.5,'8plus':8.5};
+var FUNDS_NUM={lt10:8000,'10-23':16500,'23-40':31500,'40plus':45000};
+var RESULT_TXT={strong:'Strong',improve:'Needs improvement',notyet:'Not eligible yet'};
+var CAT_FULL={'Visit':'Visit / Tourist','Study':'Study','Work':'Work / Skilled','Business':'Business','Family':'Family / Super Visa'};
+window.bwSaveElig=function(d){
+  if(!sb) return;
+  var dests=(d.dest==='Both')?['Canada','USA']:[d.dest];
+  var uid=bwUser?bwUser.id:null, email=bwUser?bwUser.email:null;
+  dests.forEach(function(ds){
+    var a; try{ a=analyze(ds,d.cat,d); }catch(e){ return; }
+    var leadId=bwUuid();
+    var lines=[ds+' — '+CAT_FULL[d.cat]+': '+a.verdict+' ('+a.score+'/100)'];
+    a.factors.forEach(function(f){ lines.push('- '+f.name+': '+f.stLabel+' — '+f.text); });
+    sb.from('leads').insert({
+      id:leadId, user_id:uid, name:d.name, phone:d.phone, email:email,
+      country:ds, visa_type:d.cat, submission_type:'Eligibility analysis',
+      message:d.refDetail?('Refusal details: '+d.refDetail):null, status:'New'
+    }).then(function(r1){
+      if(r1.error) return;
+      sb.from('assessments').insert({
+        lead_id:leadId, user_id:uid, country:ds, visa_type:d.cat,
+        age:AGE_NUM[d.age], education:LBL.edu[d.edu], work_experience_years:EXP_NUM[d.exp],
+        ielts_score:IELTS_NUM[d.lang], funds_cad:FUNDS_NUM[d.funds],
+        travel_history:LBL.travel[d.travel],
+        refusal_history:(d.refusal==='yes'?('Yes'+(d.refDetail?' — '+d.refDetail:'')):'No'),
+        result:RESULT_TXT[a.vclass], analysis_text:lines.join('\n'),
+        checked_at:new Date().toISOString()
+      }).then(function(){},function(){});
+    },function(){});
+  });
+};
+
+/* ----- Save: Free Assessment (contact) form -> leads ----- */
+var VISA_MAP={'Visit / Tourist':'Visit','Study':'Study','Work':'Work','Business':'Business','Family / Super Visa':'Family','Refused before — re-apply':'Refusal re-apply'};
+window.bwSaveContact=function(c){
+  if(!sb) return;
+  if(c.country!=='Canada'&&c.country!=='USA') return; /* leads.country only accepts Canada / USA */
+  sb.from('leads').insert({
+    user_id:bwUser?bwUser.id:null, name:c.name, phone:c.phone, email:bwUser?bwUser.email:null,
+    country:c.country, visa_type:VISA_MAP[c.visa]||'Visit', submission_type:'Free assessment',
+    message:c.msg?c.msg:null, status:'New'
+  }).then(function(){},function(){});
+};
 </script>
 </body>
 </html>
