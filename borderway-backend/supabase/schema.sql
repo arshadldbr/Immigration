@@ -236,6 +236,17 @@ alter table public.assessments  enable row level security;
 alter table public.admin_notes  enable row level security;
 alter table public.documents    enable row level security;
 
+-- Table privileges: RLS policies decide *which* rows a caller may touch,
+-- but Postgres also needs table-level privileges first. Without these,
+-- every query fails with "permission denied for table" (42501) even when
+-- a policy would allow it. Grant broadly to both roles and let RLS restrict.
+grant select, insert, update, delete on public.profiles     to anon, authenticated;
+grant select, insert, update, delete on public.admin_users  to anon, authenticated;
+grant select, insert, update, delete on public.leads        to anon, authenticated;
+grant select, insert, update, delete on public.assessments  to anon, authenticated;
+grant select, insert, update, delete on public.admin_notes  to anon, authenticated;
+grant select, insert, update, delete on public.documents    to anon, authenticated;
+
 -- profiles: a user reads and edits only their own row; admins read all.
 drop policy if exists "Users read own profile" on public.profiles;
 create policy "Users read own profile"
