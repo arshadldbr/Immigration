@@ -362,8 +362,6 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
 @media(max-width:1080px){
   .nav-links{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--bar);border:1px solid var(--bar-line);border-radius:var(--radius-lg);padding:10px;flex-direction:column;align-items:stretch;box-shadow:var(--shadow-lg)}
   .nav-links.open{display:flex}.nav-links a{padding:12px}
-  .nav-links .auth-slot-menu{display:flex}
-  .nav-links .lang-switch.in-menu{display:inline-flex}
   .nav-links a.btn{margin-top:6px}
   .menu-btn{display:flex}
   .hero-grid{grid-template-columns:1fr;padding:42px 0 52px;gap:36px}
@@ -410,6 +408,7 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
 .kicker{color:var(--blue)}.svc-list{border-top-color:var(--pine)}.svc-row p{color:#40515A}.svc-link,.learn{color:var(--bluedark)}.tag{background:#EEF5F4;color:#40515A}
 .card,.step,.country,.faq{box-shadow:0 6px 20px rgba(16,47,59,.06)}
 .elig-wrap,.finder,.about-band{background:linear-gradient(135deg,var(--navydark) 0%,var(--navy2) 100%)}
+.footer-grid{grid-template-columns:1.4fr 1fr}
 .elig-head p,.finder p,.about-band p{color:#D4E2E4}.elig-form,.elig-result,.finder-panel{box-shadow:0 16px 36px rgba(0,0,0,.18)}
 .elig-form>p,.form-note{color:#5D6E75}.elig-form select,.elig-form input,.elig-form textarea,.finder-panel select,.finder-panel input,.field input,.field select,.field textarea{color:#17252B;background:#fff;border-color:#CBD9D8}
 .officialBox,.req-box{color:#D4E2E4}.guide .gtag{background:#E7F2F1;color:#0D5361}.check-list li{color:#40515A}.check-list b{color:#17252B}
@@ -442,7 +441,7 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
 
 <div class="topbar"><div class="container">
   <span><svg class="tb-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><a href="tel:+923149891182"><span class="ltr">+92 314 9891182</span></a> &nbsp;·&nbsp; Arshad Khan Aastik</span>
-  <span class="tb-right"><span class="wa-label" data-i18n="tb_chat">Chat on WhatsApp</span><span class="hidem" data-i18n="tb_only">USA • Canada — our only two destinations</span><span data-i18n="tb_guidance">Guidance in Urdu &amp; English</span></span>
+  <span class="tb-right"><span class="wa-label" data-i18n="tb_chat">Chat on WhatsApp</span><span data-i18n="tb_guidance">Guidance in Urdu &amp; English</span></span>
 </div></div>
 
 <header class="nav"><div class="container nav-inner">
@@ -457,16 +456,8 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
   </div>
   <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   <nav class="nav-links" id="navLinks">
-    <div class="lang-switch in-menu" role="group" aria-label="Language / زبان">
-      <button type="button" data-setlang="en" class="active">EN</button>
-      <button type="button" data-setlang="ur">اردو</button>
-    </div>
-    <div class="auth-slot auth-slot-menu">
-      <button type="button" class="btn btn-navy btn-sm auth-open" data-i18n="auth_signin">Sign In</button>
-      <span class="auth-when-in" style="display:none;align-items:center;gap:10px"><span class="auth-email ltr"></span><button type="button" class="btn btn-outline btn-sm auth-out" data-i18n="auth_out">Sign out</button></span>
-    </div>
     <a href="#services" data-i18n="nav_services">Services</a><a href="#destinations" data-i18n="nav_dest">Destinations</a><a href="#process" data-i18n="nav_process">Process</a><a href="#faq" data-i18n="nav_faq">FAQ</a>
-    <a href="#eligibility" class="btn btn-blue btn-sm" data-i18n="nav_cta">Free Eligibility Analysis</a>
+    <a href="#eligibility" class="btn btn-blue btn-sm" data-i18n="nav_cta">Eligibility Analysis</a>
   </nav>
 </div></header>
 
@@ -485,7 +476,6 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
         <span class="cta-note" data-i18n="hero_cta_note">Takes about a minute. No fee, no obligation.</span>
       </div>
       <div class="hero-meta">
-        <div class="hstat"><strong>2</strong><span data-i18n="stat1">Destinations — USA &amp; Canada only</span></div>
         <div class="hstat"><strong>6</strong><span data-i18n="stat2">Visa categories assessed</span></div>
         <div class="hstat"><strong data-i18n="stat3n">26 Nov 2026</strong><span data-i18n="stat3">Policy snapshot — checked against official sources</span></div>
       </div>
@@ -511,7 +501,7 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
   <div class="svc-layout">
     <div class="svc-intro">
       <div class="kicker" data-i18n="svc_kicker">What We Do</div>
-      <h2 data-i18n="svc_h2">Six services. Two countries. One standard of preparation.</h2>
+      <h2 data-i18n="svc_h2">Visa services, assessed one case at a time.</h2>
       <p data-i18n="svc_sub">Every case starts the same way: we measure your profile against the published criteria for that visa, tell you plainly where it is weak, and only then build the file. Pick a service to see how yours is assessed.</p>
       <p class="svc-note" data-i18n-html="svc_note"><strong>Please note:</strong> Borderway International is a consultancy. The final visa decision is always made by the embassy / immigration authority (IRCC, US Embassy) — we never promise a guaranteed visa. What we promise is a file prepared accurately, against the official criteria.</p>
     </div>
@@ -697,7 +687,7 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
 <!-- CTA BAND -->
 <section class="cta-band"><div class="container">
   <div><h2 data-i18n="cta_h2">Not sure which visa is right for you?</h2><p data-i18n="cta_p">Fill in the Free Eligibility Analysis — see your result against the official criteria, then talk to us on WhatsApp.</p></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap"><a href="#eligibility" class="btn btn-white" data-i18n="nav_cta">Free Eligibility Analysis</a><a href="https://wa.me/923149891182?text=Assalam-o-Alaikum%2C%20I%20would%20like%20a%20visa%20consultation%20from%20Borderway%20International." target="_blank" rel="noopener" class="btn btn-wa" data-i18n="cta_wa">WhatsApp Us</a></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a href="#eligibility" class="btn btn-white" data-i18n="cta_analysis">Start Eligibility Analysis</a><a href="https://wa.me/923149891182?text=Assalam-o-Alaikum%2C%20I%20would%20like%20a%20visa%20consultation%20from%20Borderway%20International." target="_blank" rel="noopener" class="btn btn-wa" data-i18n="cta_wa">WhatsApp Us</a></div>
 </div></section>
 
 <!-- CONTACT / FREE ASSESSMENT -->
@@ -713,7 +703,7 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
     <div class="card" style="display:flex;flex-direction:column;justify-content:center;background:var(--pine);border-color:var(--pine);color:#fff;padding:30px 28px">
       <h3 style="font-size:22px;margin:0 0 10px;color:#fff" data-i18n="ctb_h">Start with the Free Eligibility Analysis</h3>
       <p style="color:#C9D8CF;margin:0 0 20px" data-i18n="ctb_p">Answer a few questions and see your profile scored against the official Canada and USA criteria. Your details are saved securely, and at the end you can send your result to the team member of your choice on WhatsApp.</p>
-      <a href="#eligibility" class="btn btn-gold" style="width:100%" data-i18n="nav_cta">Free Eligibility Analysis</a>
+      <a href="#eligibility" class="btn btn-gold" style="width:100%" data-i18n="cta_start">Open Eligibility Analysis</a>
       <p style="font-size:13px;color:#9DB4A7;margin:14px 0 0" data-i18n="ctb_note">Prefer to talk first? Call or message any consultant listed here — no form needed.</p>
     </div>
   </div>
@@ -723,13 +713,10 @@ html{background:var(--bg)} body{background:var(--bg);color:var(--ink);overflow-x
 <footer><div class="container">
   <div class="footer-top">
     <div><h3 data-i18n="ft_top_h">Start with the analysis. Talk to a person when you are ready.</h3><p data-i18n="ft_top_p">The eligibility analysis is free and takes about a minute. If you would rather talk first, all three consultants are on WhatsApp.</p></div>
-    <a href="#eligibility" class="btn btn-blue" data-i18n="nav_cta">Free Eligibility Analysis</a>
   </div>
   <div class="footer-grid">
     <div><img class="footer-logo" src="borderway-logo.jpg" alt="Borderway International Immigration Services logo"><p class="footer-about" data-i18n="ft_about">Owned by Ishfaq Ahmed — helping clients from Pakistan prepare strong, honest USA and Canada applications.</p></div>
-    <div><h4 data-i18n="ft_links">Quick Links</h4><ul><li><a href="#eligibility" data-i18n="nav_cta">Free Eligibility Analysis</a></li><li><a href="#finder" data-i18n="ft_finder">University Finder</a></li><li><a href="#destinations" data-i18n="nav_dest">Destinations</a></li><li><a href="#process" data-i18n="ft_process">Our Process</a></li><li><a href="#about" data-i18n="ft_aboutus">About Us</a></li><li><a href="#faq" data-i18n="nav_faq">FAQ</a></li><li><a href="#contact" data-i18n="ft_book">Book Consultation</a></li></ul></div>
-    <div><h4 data-i18n="nav_services">Services</h4><ul><li><a href="#services" data-i18n="ft_s1">Visit Visa</a></li><li><a href="#services" data-i18n="ft_s2">Study Visa</a></li><li><a href="#services" data-i18n="ft_s3">Work Visa &amp; Permit</a></li><li><a href="#services" data-i18n="svc_business">Business Visa</a></li><li><a href="#services" data-i18n="card_family_h">Family &amp; Super Visa</a></li><li><a href="#services" data-i18n="ft_s6">Refusal — Re-apply</a></li></ul></div>
-    <div><h4 data-i18n="ft_contact">Contact — WhatsApp</h4><ul class="footer-contact"><li><span class="cname">Arshad Khan Aastik</span><a class="cnum" href="tel:+923149891182"><span class="ltr">+92 314 9891182</span></a></li><li><span class="cname">Shameer Ahmed</span><a class="cnum" href="tel:+923705701578"><span class="ltr">+92 370 5701578</span></a></li><li><span class="cname">Mehran Ahmed</span><a class="cnum" href="tel:+923118252750"><span class="ltr">+92 311 8252750</span></a></li></ul><p class="footer-dest" data-i18n-html="ft_dest">Destinations: <strong>USA • Canada</strong> only</p></div>
+    <div><h4 data-i18n="ft_contact">Contact — WhatsApp</h4><ul class="footer-contact"><li><span class="cname">Arshad Khan Aastik</span><a class="cnum" href="tel:+923149891182"><span class="ltr">+92 314 9891182</span></a></li><li><span class="cname">Shameer Ahmed</span><a class="cnum" href="tel:+923705701578"><span class="ltr">+92 370 5701578</span></a></li><li><span class="cname">Mehran Ahmed</span><a class="cnum" href="tel:+923118252750"><span class="ltr">+92 311 8252750</span></a></li></ul></div>
   </div>
   <div class="footer-bottom"><span data-i18n="ft_copy">© 2026 Borderway International Immigration Services. All rights reserved.</span><span class="disc" data-i18n="ft_disc">Disclaimer: Visa decisions are made solely by the relevant embassy / immigration authority (IRCC, US Embassy). Borderway International provides consultancy &amp; documentation guidance only — no visa is guaranteed.</span></div>
 </div></footer>
@@ -787,6 +774,8 @@ nav_about:"ہمارے بارے میں",
 nav_faq:"عام سوالات",
 nav_contact:"رابطہ",
 nav_cta:"مفت Eligibility Analysis",
+cta_analysis:"Eligibility Analysis شروع کریں",
+cta_start:"Eligibility Analysis کھولیں",
 auth_signin:"سائن ان",
 auth_signup:"سائن اپ",
 auth_out:"سائن آؤٹ",
