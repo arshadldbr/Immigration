@@ -223,6 +223,24 @@ label.flabel{font-size:13px;font-weight:700;display:block;margin-bottom:5px;colo
 .policy-line{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.6}
 .policy-line a{color:var(--blue);font-weight:700;text-decoration:underline}
 .disclaimer{font-size:12.5px;color:var(--muted);margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;line-height:1.6}
+/* Next Steps hook — personalised steps + WhatsApp CTA under the result.
+   Deep-pine panel so it reads as the action panel, distinct from the
+   white factor cards above it. Reused in My Applications detail. */
+.next-steps{margin-top:18px;background:var(--pine);color:#fff;border-radius:14px;padding:20px}
+.next-steps h4{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0 0 6px;color:#fff}
+.next-steps .ns-intro{font-size:14px;color:#C9D8CF;margin:0 0 14px;line-height:1.6}
+.ns-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.ns-item{display:flex;gap:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:12px 14px;align-items:flex-start}
+.ns-num{width:28px;height:28px;border-radius:50%;background:var(--brass);color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center;flex-shrink:0;margin-top:2px;line-height:1}
+.ns-item b{display:block;font-size:15px;color:#fff;line-height:1.4}
+.ns-item p{margin:3px 0 0;font-size:13.5px;color:#D6E2D9;line-height:1.6}
+.ns-cta-text{margin:16px 0 0;font-size:14.5px;line-height:1.65;color:#fff}
+.ns-cta-text strong{color:#fff}
+.next-steps .btn-wa{margin-top:12px}
+html[lang="ur"] .next-steps h4{line-height:1.9}
+html[lang="ur"] .next-steps .ns-intro,html[lang="ur"] .ns-item p,html[lang="ur"] .ns-cta-text{font-size:15.5px;line-height:2.0}
+html[lang="ur"] .ns-item b{font-size:16.5px;line-height:1.9}
+html[lang="ur"] .ns-num{margin-top:6px}
 /* Finder */
 .finder{background:linear-gradient(120deg,var(--navydark),var(--navy2));color:#fff;border-radius:26px;padding:34px;overflow:hidden}
 .finder h2{color:#fff;font-size:clamp(28px,3.6vw,38px);margin:8px 0 10px}
@@ -1356,6 +1374,64 @@ ur:{
 'USA|Family':['USA میں family visit B2 قسم میں آتا ہے — DS-160 + انٹرویو۔','میزبان کی قانونی حیثیت کی نقل اور دعوت نامہ فائل کو مضبوط کرتے ہیں۔','INA 214(b): اپنے پاکستان سے تعلقات ثابت کرنا پھر بھی آپ کی ذمہ داری ہے۔']}
 };
 
+/* ---------- Your Next Steps — personalised hook under the result ----------
+   Rules-based only (no LLM): the 2–3 steps are picked from the visitor's
+   own answers, in priority order — refusal first, then funds, language,
+   ties/experience, travel history, education, host documents. A strong
+   profile gets the document-review + timeline steps instead. The panel
+   ends with the WhatsApp hook: full details, documents list and the best
+   route are explained on WhatsApp / at an office visit. The same panel
+   is reused in My Applications (see asmtNextStepKeys in the Supabase
+   script). */
+var NEXT_STR={
+en:{title:'Your Next Steps',intro:'Based on your result above, these are the 2–3 things that matter most for you right now — in this order:',cta:'<strong>Full details, your documents list and the best route for you</strong> — contact us on WhatsApp, and we will explain everything in detail at an office visit.',btn:'Chat on WhatsApp — Talk Through My Next Steps →',
+steps:{
+funds:['Strengthen your funds proof','Your funds are below what this route requires. Build a clear, consistent bank history and keep the amount above the official floor before you apply — a sudden large deposit creates suspicion.'],
+ielts:['Improve your IELTS score','Your language score is below the level this route needs. Aim for at least IELTS 6.0 in every band (CLB 7); at CLB 9 or higher, your score improves sharply.'],
+refusal:['Address the reason for your previous refusal','Do not re-apply with the same file. First pin down exactly why you were refused and fix that point with fresh evidence — bring your refusal details and the team will go through them with you.'],
+travel:['Build a clean travel history','You have little or no travel history yet. A short trip taken and completed on time helps show you will also return from Canada / the USA on time.'],
+ties:['Strengthen your ties & experience evidence','Your job / business evidence is thin. Gather proof — employment letter, salary slips, business registration and tax records — so your ties to Pakistan are clear on paper.'],
+edu:['Strengthen your education evidence','This route needs your education to carry more weight. Get an ECA for your qualification and choose a course / route that follows logically from your previous studies.'],
+host:['Complete the host documents check','For Family / Super Visa, the host\u2019s income at or above LICO and CAD $100,000 insurance for 1 year decide the file. Get the host\u2019s tax documents and insurance checked before anything is filed.'],
+docs:['Prepare your documents for a full review','Your basic profile is ready for the next stage. Now get every document checked one by one — passport, bank statements, education and experience papers — before anything is submitted.'],
+timeline:['Fix your timeline with the team','Intakes, appointments and biometrics fill quickly. Plan your dates with the team so you apply at the right time, with a complete file — not in a rush.']
+}},
+ur:{title:'آپ کے اگلے اقدامات',intro:'اوپر دیے گئے آپ کے نتیجے کی بنیاد پر، اس وقت آپ کے لیے سب سے اہم 2–3 چیزیں یہ ہیں — اسی ترتیب میں:',cta:'<strong>مکمل تفصیل، آپ کی دستاویزات کی فہرست اور آپ کے لیے بہترین راستہ</strong> — WhatsApp پر رابطہ کریں، اور دفتر کے دورے پر ہم آپ کو سب کچھ تفصیل سے سمجھائیں گے۔',btn:'WhatsApp پر بات کریں — میرے اگلے اقدامات سمجھیں ←',
+steps:{
+funds:['اپنے فنڈز کا ثبوت مضبوط کریں','اس راستے کے لیے درکار رقم سے آپ کے فنڈز کم ہیں۔ اپلائی کرنے سے پہلے واضح اور مستقل بینک ہسٹری بنائیں اور رقم سرکاری کم از کم حد سے اوپر رکھیں — اچانک بڑی رقم جمع کرانا شک پیدا کرتا ہے۔'],
+ielts:['اپنا IELTS اسکور بہتر کریں','اس راستے کے لیے درکار سطح سے آپ کا زبان کا اسکور کم ہے۔ ہر بینڈ میں کم از کم IELTS 6.0 (CLB 7) کا ہدف رکھیں؛ CLB 9 یا اس سے اوپر پر آپ کا اسکور بہت بہتر ہو جاتا ہے۔'],
+refusal:['اپنے پچھلے انکار کی وجہ دور کریں','اسی فائل کے ساتھ دوبارہ اپلائی نہ کریں۔ پہلے ٹھیک ٹھیک معلوم کریں کہ انکار کیوں ہوا تھا اور اس نکتے کو نئے ثبوت سے درست کریں — اپنی انکار کی تفصیلات لائیں، ٹیم آپ کے ساتھ ان کا جائزہ لے گی۔'],
+travel:['صاف ستھری سفری تاریخ بنائیں','آپ کی سفری تاریخ ابھی بہت کم یا بالکل نہیں ہے۔ ایک مختصر سفر جو وقت پر مکمل ہو، یہ دکھانے میں مدد دیتا ہے کہ آپ Canada / USA سے بھی وقت پر واپس آئیں گے۔'],
+ties:['اپنے تعلقات اور تجربے کا ثبوت مضبوط کریں','آپ کی ملازمت / کاروبار کا ثبوت کمزور ہے۔ ثبوت جمع کریں — ملازمت کا خط، تنخواہ کی سلپس، کاروبار کی رجسٹریشن اور ٹیکس ریکارڈز — تاکہ کاغذ پر آپ کے پاکستان سے تعلقات واضح ہوں۔'],
+edu:['اپنی تعلیم کا ثبوت مضبوط کریں','اس راستے کے لیے آپ کی تعلیم کا وزن زیادہ ہونا ضروری ہے۔ اپنی اہلیت کا ECA کروائیں اور ایسا کورس / راستہ منتخب کریں جو آپ کی پچھلی تعلیم سے منطقی طور پر آگے بڑھے۔'],
+host:['میزبان کی دستاویزات کی جانچ مکمل کریں','Family / Super Visa کے لیے میزبان کی آمدنی LICO کے برابر یا اس سے زیادہ اور 1 سال کے لیے CAD $100,000 انشورنس فائل کا فیصلہ کرتی ہے۔ کچھ بھی جمع کرانے سے پہلے میزبان کے ٹیکس دستاویزات اور انشورنس کی جانچ کروائیں۔'],
+docs:['اپنی دستاویزات مکمل جائزے کے لیے تیار کریں','آپ کا بنیادی پروفائل اگلے مرحلے کے لیے تیار ہے۔ اب ہر دستاویز ایک ایک کر کے جانچوائیں — پاسپورٹ، بینک اسٹیٹمنٹس، تعلیم اور تجربے کے کاغذات — کچھ بھی جمع کرانے سے پہلے۔'],
+timeline:['ٹیم کے ساتھ اپنا شیڈول طے کریں','انٹیک، اپائنٹمنٹس اور بائیو میٹرکس جلدی بھر جاتے ہیں۔ ٹیم کے ساتھ اپنی تاریخیں طے کریں تاکہ آپ درست وقت پر، مکمل فائل کے ساتھ اپلائی کریں — جلد بازی میں نہیں۔']
+}}
+};
+function nsStr(k){ return (NEXT_STR[LANG]&&NEXT_STR[LANG][k])||NEXT_STR.en[k]; }
+function nsStep(k){ return (NEXT_STR[LANG]&&NEXT_STR[LANG].steps[k])||NEXT_STR.en.steps[k]; }
+function eligNextStepKeys(d){
+  var keys=[];
+  if(d.refusal==='yes') keys.push('refusal');
+  if(d.funds==='lt10'||(d.funds==='10-23'&&(d.cat==='Study'||d.cat==='Work'||d.cat==='Family'))) keys.push('funds');
+  if(d.lang==='below6'||d.lang==='notTaken'||(d.lang==='6-6.5'&&d.cat==='Work')) keys.push('ielts');
+  if(d.exp==='none'||d.exp==='lt1') keys.push('ties');
+  if(d.travel==='none') keys.push('travel');
+  if((d.edu==='matric'||d.edu==='inter')&&(d.cat==='Work'||d.cat==='Study')) keys.push('edu');
+  if(d.cat==='Family'&&d.dest!=='USA') keys.push('host');
+  keys=keys.filter(function(k,i){ return keys.indexOf(k)===i; });
+  if(keys.length<2) keys.push('docs');
+  if(keys.length<2) keys.push('timeline');
+  return keys.slice(0,3);
+}
+function nextStepsHtml(keys,href,cls){
+  var h='<div class="next-steps"><h4>'+nsStr('title')+'</h4><p class="ns-intro">'+nsStr('intro')+'</p><ul class="ns-list">';
+  keys.forEach(function(k,i){ var s=nsStep(k); h+='<li class="ns-item"><span class="ns-num">'+(i+1)+'</span><span><b>'+s[0]+'</b><p>'+s[1]+'</p></span></li>'; });
+  h+='</ul><p class="ns-cta-text">'+nsStr('cta')+'</p><a class="btn btn-wa '+(cls||'')+'" href="'+(href||'#')+'" target="_blank" rel="noopener" style="width:100%">'+nsStr('btn')+'</a></div>';
+  return h;
+}
+
 function renderElig(d,scroll){
   var dests = d.dest==='Both' ? ['Canada','USA'] : [d.dest];
   var html='', waParts=[];
@@ -1375,6 +1451,8 @@ function renderElig(d,scroll){
     html+='</ul></div></div>';
     waParts.push(ds+' '+({'Visit':'Visit / Tourist','Study':'Study','Work':'Work / Skilled','Business':'Business','Family':'Family / Super Visa'})[d.cat]+': '+({'strong':'Strong Profile','improve':'Needs Improvement','notyet':'Not Eligible Yet'})[a.vclass]+' ('+a.score+'/100)');
   });
+  var nsKeys=eligNextStepKeys(d);
+  html+=nextStepsHtml(nsKeys,'#','ns-wa');
   html+='<p class="policy-line">'+t('policyLine')+'</p>'
     +'<p class="disclaimer">'+t('disclaimer')+'</p>'
     +'<a class="btn btn-wa" id="eligWa" href="#" target="_blank" rel="noopener" style="width:100%;margin-top:14px">'+t('waBtn')+'</a>'
@@ -1382,10 +1460,13 @@ function renderElig(d,scroll){
 
   var box=document.getElementById('eligResult'); box.innerHTML=html; box.classList.add('show');
   var catLabelFull={'Visit':'Visit / Tourist','Study':'Study','Work':'Work / Skilled','Business':'Business','Family':'Family / Super Visa'}[d.cat];
+  var nsTitlesEn=nsKeys.map(function(k){ return NEXT_STR.en.steps[k][0]; });
   var msg='Assalam-o-Alaikum, I am '+d.name+'.\nI completed the Free Eligibility Analysis on the Borderway website — I would like a complete document-based analysis.\n\n'
     +'Destination: '+d.dest+'\nCategory: '+catLabelFull+'\nAge: '+LBL.age[d.age]+'\nEducation: '+LBL.edu[d.edu]+'\nExperience: '+LBL.exp[d.exp]+'\nLanguage: '+LBL.lang[d.lang]+'\nFunds: '+LBL.funds[d.funds]+'\nTravel history: '+LBL.travel[d.travel]+'\nPrevious refusal: '+(d.refusal==='yes'?'Yes':'No')+(d.refDetail?'\nRefusal details: '+d.refDetail:'')
-    +'\n\nOnline Result: '+waParts.join(' | ')+'\nMy WhatsApp: '+d.phone+'\n\nPlease request my documents on WhatsApp and tell me the next steps.';
-  document.getElementById('eligWa').href='https://wa.me/'+d.person+'?text='+encodeURIComponent(msg);
+    +'\n\nOnline Result: '+waParts.join(' | ')+'\nMy next steps from the result: '+nsTitlesEn.join('; ')+'\nMy WhatsApp: '+d.phone+'\n\nPlease give me the full details, my documents list and the best route for me, and request my documents on WhatsApp.';
+  var waUrl='https://wa.me/'+d.person+'?text='+encodeURIComponent(msg);
+  document.getElementById('eligWa').href=waUrl;
+  var nsWa=box.querySelector('.ns-wa'); if(nsWa) nsWa.href=waUrl;
   if(scroll) box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1628,6 +1709,23 @@ function fstatClass(label){
   if(/Weak|Attention|کمزور|توجہ/.test(label)) return 'bad';
   return 'mid';
 }
+function asmtNextStepKeys(lead,asmt){
+  if(!asmt) return ['docs','timeline'];
+  var keys=[];
+  if(asmt.refusal_history&&/^Yes/.test(String(asmt.refusal_history))) keys.push('refusal');
+  if(asmt.funds_cad!=null&&Number(asmt.funds_cad)<23000) keys.push('funds');
+  if(asmt.ielts_score==null){ if(lead.visa_type==='Study'||lead.visa_type==='Work') keys.push('ielts'); }
+  else if(Number(asmt.ielts_score)<6) keys.push('ielts');
+  else if(Number(asmt.ielts_score)<7&&lead.visa_type==='Work') keys.push('ielts');
+  if(asmt.work_experience_years!=null&&Number(asmt.work_experience_years)<1) keys.push('ties');
+  if(asmt.travel_history&&/No travel/i.test(String(asmt.travel_history))) keys.push('travel');
+  if((asmt.education==='Matric'||asmt.education==='Intermediate')&&(lead.visa_type==='Work'||lead.visa_type==='Study')) keys.push('edu');
+  if(lead.visa_type==='Family'&&lead.country==='Canada') keys.push('host');
+  keys=keys.filter(function(k,i){ return keys.indexOf(k)===i; });
+  if(keys.length<2) keys.push('docs');
+  if(keys.length<2) keys.push('timeline');
+  return keys.slice(0,3);
+}
 function appDetailHtml(lead,asmt){
   var h='';
   if(asmt){
@@ -1652,6 +1750,14 @@ function appDetailHtml(lead,asmt){
     h+='<p style="color:var(--ink2);font-size:14.5px;margin:0">'+ms('noAnalysis')+'</p>';
   }
   if(lead.message) h+='<div class="app-note"><strong>'+ms('noteHead')+':</strong>\n'+escHtml(lead.message)+'</div>';
+  /* Same Next Steps hook as the live result: steps derived from this
+     saved profile, CTA to the team on WhatsApp (Arshad by default). */
+  if(typeof nextStepsHtml==='function'&&typeof eligNextStepKeys==='function'){
+    var nsKeys2=asmtNextStepKeys(lead,asmt);
+    var nsTitlesEn2=nsKeys2.map(function(k){ return NEXT_STR.en.steps[k][0]; });
+    var waMsg2='Assalam-o-Alaikum, I am following up on my Borderway application — '+lead.country+' — '+(CAT_FULL[lead.visa_type]||lead.visa_type)+(asmt&&asmt.result?(' ('+asmt.result+')'):'')+'.\nMy next steps from my result: '+nsTitlesEn2.join('; ')+'\n\nPlease give me the full details, my documents list and the best route for me.';
+    h+=nextStepsHtml(nsKeys2,'https://wa.me/923149891182?text='+encodeURIComponent(waMsg2),'');
+  }
   return h;
 }
 function appRowHtml(lead,asmt){
