@@ -15,6 +15,25 @@
 window.__bwBIP=null;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); window.__bwBIP=e; });
 window.addEventListener('appinstalled',function(){ window.__bwBIP=null; });
+/* Installed-app mode, decided before first paint. When the site is
+   running as the installed app (standalone window), tag <html> so
+   the stylesheet can (a) remove every Download App button and the
+   install popup, and (b) on phones force the clean mobile layout.
+   Some phones open the installed app with a wide, desktop-like
+   layout viewport — the page renders as if it were ~1000px wide
+   and is scaled down — so the phone test uses the physical screen
+   size: window.screen is not affected by the layout viewport. */
+(function(){
+  try{
+    var mm=window.matchMedia;
+    var app=(mm&&(mm('(display-mode: standalone)').matches||mm('(display-mode: fullscreen)').matches||mm('(display-mode: minimal-ui)').matches))||window.navigator.standalone===true||(document.referrer&&document.referrer.indexOf('android-app://')===0);
+    if(!app) return;
+    var de=document.documentElement;
+    de.classList.add('is-app');
+    var sw=window.screen?Math.min(window.screen.width||9999,window.screen.height||9999):9999;
+    if(sw<=600) de.classList.add('app-phone');
+  }catch(e){}
+})();
 </script>
 <meta name="apple-mobile-web-app-title" content="Borderway"/>
 <meta name="description" content="Borderway International Immigration Services — USA & Canada only. Free Eligibility Analysis based on official IRCC (canada.ca) and US (travel.state.gov / uscis.gov) criteria. Visit, Study, Work, Business, Family / Super Visa. WhatsApp: Arshad Khan Aastik +92 314 9891182."/>
@@ -608,6 +627,63 @@ html,body{overflow-x:clip}
   .hero-meta .hstat:last-child{grid-column:1/-1}
   .hstat strong{font-size:21px}
 }
+/* ---------- Installed app (standalone) ----------
+   Two guarantees when the site runs as the installed app:
+   1. Nothing offers to install it again — every Download App
+      button (install popup, header menu, footer gold button,
+      footer Quick Links) and the popup itself are removed. The
+      display-mode media query does this on its own in
+      standards-compliant browsers; the html.is-app class (set by
+      the head script, which also sees iOS's navigator.standalone)
+      covers the rest.
+   2. On a phone the app always gets the clean mobile layout.
+      Some phones open the installed window with a wide,
+      desktop-like layout viewport (~1000px), where the normal
+      max-width breakpoints never match and the site renders its
+      small-desktop layout scaled down — crowded header, four-item
+      topbar, two-column services. html.app-phone (set from the
+      physical screen size, which the layout viewport cannot fake)
+      re-applies the phone rules with no width condition. */
+@media (display-mode: standalone),(display-mode: fullscreen),(display-mode: minimal-ui){
+  .js-install-app,.pwa-popup,.pwa-popup.manual.show{display:none!important}
+}
+html.is-app .js-install-app,html.is-app .pwa-popup,html.is-app .pwa-popup.manual.show{display:none!important}
+html.app-phone .topbar{font-size:12.5px}
+html.app-phone .topbar .container{padding-top:6px;padding-bottom:6px;flex-wrap:nowrap}
+html.app-phone .topbar .tb-name,html.app-phone .topbar .tb-guide,html.app-phone .topbar .tb-right span.hidem{display:none}
+html.app-phone .topbar .tb-right{gap:10px;flex-wrap:nowrap}
+html.app-phone .nav-inner{gap:8px}
+html.app-phone .nav-inner>.lang-switch{display:none}
+html.app-phone .nav-inner>.auth-slot{flex-shrink:1;min-width:0}
+html.app-phone .nav-inner>.auth-slot .auth-email{display:none}
+html.app-phone .nav-inner>.auth-slot .auth-when-in{gap:6px!important}
+html.app-phone .logo-img{height:56px;max-width:160px}
+html.app-phone .menu-btn{display:flex}
+html.app-phone .nav-links{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--bar);border:1px solid var(--bar-line);border-radius:var(--radius-lg);padding:10px;flex-direction:column;align-items:stretch;box-shadow:var(--shadow-lg)}
+html.app-phone .nav-links.open{display:flex}
+html.app-phone .nav-links a{padding:12px}
+html.app-phone .nav-links .auth-slot-menu{display:flex}
+html.app-phone .nav-links .lang-switch.in-menu{display:inline-flex}
+html.app-phone .nav-links a.btn{margin-top:6px}
+html.app-phone .section{padding:46px 0}
+html.app-phone .hero-grid{grid-template-columns:1fr;padding-top:36px;padding-bottom:46px;gap:30px}
+html.app-phone .hero h1{font-size:34px;line-height:1.14}
+html.app-phone .hero-meta{grid-template-columns:1fr 1fr;gap:12px}
+html.app-phone .hero-meta .hstat:last-child{grid-column:1/-1}
+html.app-phone .hstat strong{font-size:21px}
+html.app-phone .hstat + .hstat{border-inline-start:0;padding-inline-start:0}
+html.app-phone .svc-layout{grid-template-columns:1fr;gap:30px}
+html.app-phone .svc-intro{position:static}
+html.app-phone .svc-row{grid-template-columns:40px 1fr}
+html.app-phone .svc-link{grid-column:2}
+html.app-phone .ia-grid{grid-template-columns:1fr;gap:26px}
+html.app-phone .ia-photo{max-width:340px}
+html.app-phone .elig-grid,html.app-phone .grid2,html.app-phone .grid3,html.app-phone .process,html.app-phone .form-grid,html.app-phone .f-grid{grid-template-columns:1fr}
+html.app-phone .finder,html.app-phone .about-band,html.app-phone .elig-wrap{padding:22px}
+html.app-phone .footer-grid{grid-template-columns:1fr;gap:34px}
+html.app-phone .cta-band .container{flex-direction:column;align-items:flex-start}
+html.app-phone .auth-slot .btn{padding:8px 11px;font-size:13.5px}
+html.app-phone .lang-switch button{padding:6px 10px}
 /* ---------- Document upload: a proper Step 2 panel ----------
    The upload box used to be a muted grey block buried in the middle
    of the result — easy to scroll straight past. It is now an
@@ -2453,7 +2529,27 @@ try{
 
   function isInstalled(){
     try{ if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) return true; }catch(e){}
-    return window.navigator.standalone===true;
+    if(window.navigator.standalone===true) return true;
+    /* The head script tags <html> before first paint when the
+       site runs as the installed app — trust that tag too; it
+       also covers fullscreen / minimal-ui windows and app
+       launches referred from android-app://. */
+    return document.documentElement.classList.contains('is-app');
+  }
+  /* Running as the installed app: make sure the tags are on
+     <html> (the stylesheet then removes every Download App
+     button and forces the phone layout on phones) and the popup
+     is gone for good. Kept correct even if the window only
+     became standalone after load. hidePopup is a hoisted
+     function declaration below, so calling it from here is safe. */
+  function applyAppMode(){
+    var de=document.documentElement;
+    de.classList.add('is-app');
+    try{
+      var sw=window.screen?Math.min(window.screen.width||9999,window.screen.height||9999):9999;
+      if(sw<=600) de.classList.add('app-phone');
+    }catch(e){}
+    hidePopup();
   }
   function isSmallScreen(){
     try{ return window.matchMedia&&window.matchMedia('(max-width: 768px)').matches; }catch(e){ return window.innerWidth<=768; }
@@ -2493,7 +2589,13 @@ try{
       showSteps('<p><strong>Install is ready.</strong> Tap the <strong>Download App</strong> button above, then tap <strong>Install</strong>.</p>');
     }
   });
-  window.addEventListener('appinstalled',function(){ deferredPrompt=null; window.__bwBIP=null; hidePopup(); });
+  window.addEventListener('appinstalled',function(){ deferredPrompt=null; window.__bwBIP=null; applyAppMode(); });
+  /* If the window becomes standalone later (install finishing in
+     the background, display mode changing), apply app mode then. */
+  try{
+    var dmq=window.matchMedia('(display-mode: standalone)');
+    if(dmq&&dmq.addEventListener) dmq.addEventListener('change',function(ev){ if(ev.matches) applyAppMode(); });
+  }catch(e){}
 
   if(closeBtn) closeBtn.addEventListener('click',function(){ hidePopup(); });
 
@@ -2616,6 +2718,11 @@ try{
      visitor had scrolled on and the popup's 10 seconds were gone
      unseen. DOMContentLoaded is enough — the popup needs only the
      DOM. The load listener stays as a backup, disarmed once armed. */
+  /* Already running as the installed app on load: tag the page
+     now (the head script normally did this before first paint)
+     and never let the popup arm. */
+  if(isInstalled()) applyAppMode();
+
   var popupArmed=false;
   function armPopup(){
     if(popupArmed) return; popupArmed=true;
