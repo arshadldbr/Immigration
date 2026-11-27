@@ -317,6 +317,46 @@
       .note-item .note-text { font-size: 0.94rem; white-space: pre-wrap; word-break: break-word; }
       .note-item .note-date { font-size: 0.78rem; color: var(--ink-faint); margin-top: 3px; }
       .note-item.verdict .note-text { font-weight: 700; }
+      /* ---------- Delete / danger zone ---------- */
+      .danger-zone {
+        border: 1px solid var(--line); border-radius: var(--radius);
+        background: var(--surface); padding: 16px;
+      }
+      .danger-zone > p { margin: 0 0 12px; font-size: 0.92rem; color: var(--ink-soft); }
+      .danger-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+      .btn-danger {
+        background: var(--danger); color: #fff; border: 0; border-radius: 8px;
+        padding: 10px 18px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;
+      }
+      .btn-danger:hover { filter: brightness(1.1); }
+      .btn-danger:disabled { opacity: 0.6; cursor: wait; }
+      @media (prefers-color-scheme: dark) { .btn-danger { color: #2a130e; } }
+      .btn-danger-outline {
+        background: transparent; color: var(--danger); border: 1px solid var(--danger);
+        border-radius: 8px; padding: 10px 18px; font-weight: 700;
+        display: inline-flex; align-items: center; gap: 8px;
+      }
+      .btn-danger-outline:hover { background: var(--danger-bg); }
+      .btn-danger-outline:disabled { opacity: 0.6; cursor: wait; }
+      /* ---------- Confirm modal ---------- */
+      .modal-scrim {
+        position: fixed; inset: 0; background: rgba(18, 30, 24, 0.55); z-index: 90;
+        display: none; align-items: center; justify-content: center; padding: 20px;
+      }
+      .modal-scrim.open { display: flex; }
+      .modal-card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+        box-shadow: var(--shadow); max-width: 450px; width: 100%; padding: 26px;
+      }
+      .modal-card h3 { font-family: "Source Serif 4", Georgia, serif; font-size: 1.32rem; margin: 0 0 10px; }
+      .modal-card p { font-size: 0.94rem; color: var(--ink-soft); margin: 0 0 10px; }
+      .modal-card p.warn { color: var(--danger); font-weight: 700; }
+      .modal-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+      .btn-cancel {
+        background: transparent; border: 1px solid var(--line); color: var(--ink);
+        border-radius: 8px; padding: 10px 18px; font-weight: 600;
+      }
+      .btn-cancel:hover { border-color: var(--brass); }
       /* ---------- Admin Report (Enhanced) ---------- */
       .report-card {
         background: var(--surface); border: 1px solid var(--line);
@@ -589,8 +629,34 @@
             <div class="inline-msg" id="noteMsg"></div>
           </div>
         </div>
+
+        <div class="section-title">Delete</div>
+        <div class="danger-zone">
+          <p>Deleting is permanent. Delete lead removes only this lead. Delete all data of this user removes every lead, assessment, note and document record belonging to this person, so old data does not pile up.</p>
+          <div class="danger-actions">
+            <button type="button" class="btn-danger" id="btnDeleteLead">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              Delete lead
+            </button>
+            <button type="button" class="btn-danger-outline" id="btnDeleteUserData">Delete all data of this user</button>
+          </div>
+          <div class="inline-msg" id="deleteMsg"></div>
+          <p class="muted" style="margin:12px 0 0;">The person's sign-in account itself can only be deleted from the Supabase dashboard → Authentication → Users.</p>
+        </div>
       </div>
     </aside>
+
+    <!-- In-page confirmation dialog for destructive actions -->
+    <div class="modal-scrim" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-card">
+        <h3 id="confirmTitle">Are you sure?</h3>
+        <div id="confirmBody"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="confirmNo">Cancel</button>
+          <button type="button" class="btn-danger" id="confirmYes">Delete</button>
+        </div>
+      </div>
+    </div>
 
     <footer class="site">
       Borderway International Immigration Services — Admin Panel. The final visa decision rests with the embassy; no result is guaranteed.
@@ -828,7 +894,7 @@
         function filteredLeads() {
           var q = searchTerm.trim().toLowerCase();
           return leads.filter(function (l) {
-            if (statusFilter !== "All" && String(l.status || "New") !== statusFilter) return false;
+            if (statusFilter !== "All" && String(l.status || "New").toLowerCase() !== statusFilter.toLowerCase()) return false;
             if (!q) return true;
             return [l.name, l.phone, l.email].some(function (v) {
               return String(v || "").toLowerCase().indexOf(q) !== -1;
@@ -900,7 +966,7 @@
             ["Status", lead.status || "New"]
           ];
           document.getElementById("dContact").innerHTML = kv.map(function (p) {
-            return "<dt>" + esc(p[0]) + "</dt><dd>" + esc(p[1] || "—") + "</dd>";
+            return "<dt>" + esc(p[0]) + "</dt><dd" + (p[0] === "Status" ? ' id="dStatusVal"' : "") + ">" + esc(p[1] || "—") + "</dd>";
           }).join("");
 
           var wa = document.getElementById("dWhatsApp");
@@ -925,6 +991,7 @@
           setInline("statusMsg", "", "");
           setInline("verdictMsg", "", "");
           setInline("noteMsg", "", "");
+          setInline("deleteMsg", "", "");
           document.getElementById("dNoteText").value = "";
           document.getElementById("dVerdict").value = "";
           document.getElementById("dReport").innerHTML = '<p class="muted">Preparing report…</p>';
@@ -948,7 +1015,7 @@
         document.getElementById("btnCloseDrawer").addEventListener("click", closeDrawer);
         scrim.addEventListener("click", closeDrawer);
         document.addEventListener("keydown", function (ev) {
-          if (ev.key === "Escape") closeDrawer();
+          if (ev.key === "Escape" && !closeDialogIfOpen()) closeDrawer();
         });
 
         function setInline(id, type, text) {
@@ -1382,13 +1449,23 @@
           var btn = this;
           var status = document.getElementById("dStatus").value;
           btn.disabled = true;
-          sb.from("leads").update({ status: status }).eq("id", activeLead.id).then(function (res) {
+          setInline("statusMsg", "", "");
+          // .select("id") makes the save verifiable: if row-level security
+          // silently blocks the update, zero rows come back and we say so
+          // instead of claiming success.
+          sb.from("leads").update({ status: status }).eq("id", activeLead.id).select("id").then(function (res) {
             btn.disabled = false;
             if (res.error) { setInline("statusMsg", "error", "Could not save: " + res.error.message); return; }
+            if (!res.data || !res.data.length) {
+              setInline("statusMsg", "error", "Status was not saved — the update changed no rows. Your admin permissions may not allow editing leads.");
+              return;
+            }
             activeLead.status = status;
             leads = leads.map(function (l) { return l.id === activeLead.id ? activeLead : l; });
+            var sv = document.getElementById("dStatusVal");
+            if (sv) sv.textContent = status;
             renderLeads();
-            setInline("statusMsg", "good", "Status saved.");
+            setInline("statusMsg", "good", "Status saved. This lead now appears under the \"" + status + "\" tab.");
           });
         });
 
@@ -1423,6 +1500,148 @@
             setInline("noteMsg", "good", "Note added.");
             loadNotes(activeLead.id);
           });
+        });
+
+        /* ---------------- Delete (lead / all data of a user) ----------------
+           The confirmation step is an in-page modal, because native
+           browser dialogs are blocked inside this panel. Deletes are
+           verified with .select("id"):
+           if Supabase row-level security blocks a delete, zero rows come
+           back and the admin sees a clear error instead of false success. */
+        var confirmModal = document.getElementById("confirmModal");
+        var confirmYesBtn = document.getElementById("confirmYes");
+        var pendingAction = null;
+
+        function requestConfirmation(title, bodyHtml, confirmLabel, onYes) {
+          document.getElementById("confirmTitle").textContent = title;
+          document.getElementById("confirmBody").innerHTML = bodyHtml;
+          confirmYesBtn.textContent = confirmLabel;
+          pendingAction = onYes;
+          confirmModal.classList.add("open");
+        }
+        function closeDialog() {
+          confirmModal.classList.remove("open");
+          pendingAction = null;
+        }
+        function closeDialogIfOpen() {
+          if (confirmModal && confirmModal.classList.contains("open")) { closeDialog(); return true; }
+          return false;
+        }
+        confirmYesBtn.addEventListener("click", function () {
+          var fn = pendingAction;
+          closeDialog();
+          if (fn) fn();
+        });
+        document.getElementById("confirmNo").addEventListener("click", closeDialog);
+        confirmModal.addEventListener("click", function (ev) {
+          if (ev.target === confirmModal) closeDialog();
+        });
+
+        function deleteErrorText(err) {
+          var msg = (err && err.message) ? err.message : String(err || "Unknown error");
+          if (/permission|denied|row-level security|policy/i.test(msg)) {
+            return "Supabase refused the delete (permission denied). Your admin role may not have delete permission on this table. Details: " + msg;
+          }
+          return msg;
+        }
+
+        function deleteLinkedRows(leadIds) {
+          function check(res) { if (res && res.error) throw res.error; return res; }
+          var jobs = [
+            sb.from("assessments").delete().in("lead_id", leadIds).then(check),
+            sb.from("admin_notes").delete().in("lead_id", leadIds).then(check),
+            // Document records are deleted "if any": a missing documents
+            // table must not block the delete, but a real permission error
+            // on it must still surface.
+            sb.from("documents").delete().in("lead_id", leadIds).then(function (res) {
+              if (res && res.error && !/does not exist|schema cache|could not find/i.test(res.error.message || "")) throw res.error;
+              return res;
+            })
+          ];
+          return Promise.all(jobs);
+        }
+
+        function setDeleteBusy(busy) {
+          document.getElementById("btnDeleteLead").disabled = busy;
+          document.getElementById("btnDeleteUserData").disabled = busy;
+        }
+
+        document.getElementById("btnDeleteLead").addEventListener("click", function () {
+          if (!activeLead) return;
+          var lead = activeLead;
+          var who = esc(lead.name || "this lead") + (lead.email ? " (" + esc(lead.email) + ")" : "");
+          requestConfirmation(
+            "Delete this lead?",
+            "<p>The lead for <strong>" + who + "</strong> will be permanently deleted from Supabase, together with its linked eligibility assessment, admin notes and document records.</p>" +
+            '<p class="warn">This cannot be undone.</p>',
+            "Delete lead",
+            function () {
+              setDeleteBusy(true);
+              setInline("deleteMsg", "", "");
+              deleteLinkedRows([lead.id]).then(function () {
+                return sb.from("leads").delete().eq("id", lead.id).select("id");
+              }).then(function (res) {
+                if (res.error) throw res.error;
+                if (!res.data || !res.data.length) {
+                  throw new Error("No rows were deleted — your admin permissions may not allow deleting leads.");
+                }
+                var label = lead.name || lead.email || "Lead";
+                setDeleteBusy(false);
+                closeDrawer();
+                loadLeads();
+                notice(adminNotice, "good", "Deleted: " + label + " and everything linked to it.");
+              }).catch(function (err) {
+                setDeleteBusy(false);
+                setInline("deleteMsg", "error", "Delete failed: " + deleteErrorText(err));
+              });
+            }
+          );
+        });
+
+        document.getElementById("btnDeleteUserData").addEventListener("click", function () {
+          if (!activeLead) return;
+          var lead = activeLead;
+          var email = String(lead.email || "").trim().toLowerCase();
+          var uid = lead.user_id || null;
+          // Every lead belonging to this person: same account (user_id)
+          // or same email address.
+          var targets = leads.filter(function (l) {
+            if (uid && l.user_id && String(l.user_id) === String(uid)) return true;
+            if (email && String(l.email || "").trim().toLowerCase() === email) return true;
+            return String(l.id) === String(lead.id);
+          });
+          var who = esc(lead.name || "this user") + (lead.email ? " (" + esc(lead.email) + ")" : "");
+          requestConfirmation(
+            "Delete all data of this user?",
+            "<p>ALL data for <strong>" + who + "</strong> will be permanently deleted from Supabase: <strong>" +
+              targets.length + (targets.length === 1 ? " lead" : " leads") +
+              "</strong>, plus every linked eligibility assessment, admin note and document record.</p>" +
+            '<p class="warn">This cannot be undone.</p>' +
+            "<p>Their sign-in account itself is not removed here — delete that in the Supabase dashboard under Authentication → Users.</p>",
+            "Delete all data",
+            function () {
+              var ids = targets.map(function (l) { return l.id; });
+              setDeleteBusy(true);
+              setInline("deleteMsg", "", "");
+              deleteLinkedRows(ids).then(function () {
+                return sb.from("leads").delete().in("id", ids).select("id");
+              }).then(function (res) {
+                if (res.error) throw res.error;
+                if (!res.data || !res.data.length) {
+                  throw new Error("No rows were deleted — your admin permissions may not allow deleting leads.");
+                }
+                var label = lead.name || lead.email || "User";
+                var count = res.data.length;
+                setDeleteBusy(false);
+                closeDrawer();
+                loadLeads();
+                notice(adminNotice, "good", "Deleted all data for " + label + " (" + count + (count === 1 ? " lead" : " leads") + " removed).");
+              }).catch(function (err) {
+                setDeleteBusy(false);
+                setInline("deleteMsg", "error", "Delete failed: " + deleteErrorText(err));
+              });
+            }
+          );
         });
       })();
     </script>
