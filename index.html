@@ -15,25 +15,52 @@
 window.__bwBIP=null;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); window.__bwBIP=e; });
 window.addEventListener('appinstalled',function(){ window.__bwBIP=null; });
-/* Installed-app mode, decided before first paint. When the site is
-   running as the installed app (standalone window), tag <html> so
-   the stylesheet can (a) remove every Download App button and the
-   install popup, and (b) on phones force the clean mobile layout.
-   Some phones open the installed app with a wide, desktop-like
-   layout viewport — the page renders as if it were ~1000px wide
-   and is scaled down — so the phone test uses the physical screen
-   size: window.screen is not affected by the layout viewport. */
-(function(){
+/* Installed-app mode, decided before first paint and re-checked as
+   the window settles. When the site runs as the installed app
+   (standalone window), tag <html> so the stylesheet can (a) remove
+   every Download App button and the install popup, and (b) on a
+   phone force the clean mobile layout — ALWAYS, no matter how the
+   browser was set when the app was installed or is launched.
+
+   Why the phone test is built on touch hardware: Chrome's
+   "Desktop site" mode rewrites everything a page can normally
+   measure — the user agent, the layout viewport (~980px) AND
+   window.screen (it emulates a desktop display, e.g. 1280px wide).
+   The old test (screen.width <= 600) therefore mirrored the
+   Desktop-site toggle exactly: toggle on = desktop layout inside
+   the app, toggle off = mobile layout. What desktop mode cannot
+   rewrite is the physical input hardware: a phone's primary
+   pointer stays coarse (a touchscreen) and the device keeps its
+   touch points. So phone = coarse primary pointer + touch points,
+   with the classic small-screen test kept only as a second,
+   independent signal. Neither signal consults the reported width,
+   the user agent, or the Desktop-site setting. The marker only
+   ever ADDS the tags, so re-running it is always safe. */
+window.__bwMarkApp=function(){
   try{
     var mm=window.matchMedia;
     var app=(mm&&(mm('(display-mode: standalone)').matches||mm('(display-mode: fullscreen)').matches||mm('(display-mode: minimal-ui)').matches))||window.navigator.standalone===true||(document.referrer&&document.referrer.indexOf('android-app://')===0);
-    if(!app) return;
+    if(!app) return false;
     var de=document.documentElement;
     de.classList.add('is-app');
-    var sw=window.screen?Math.min(window.screen.width||9999,window.screen.height||9999):9999;
-    if(sw<=600) de.classList.add('app-phone');
-  }catch(e){}
-})();
+    var phone=false;
+    try{ phone=!!(mm&&mm('(pointer: coarse)').matches&&(window.navigator.maxTouchPoints||0)>0); }catch(e){}
+    if(!phone){
+      try{ var sw=window.screen?Math.min(window.screen.width||9999,window.screen.height||9999):9999; if(sw<=600) phone=true; }catch(e){}
+    }
+    if(phone) de.classList.add('app-phone');
+    return true;
+  }catch(e){ return false; }
+};
+window.__bwMarkApp();
+/* The standalone window can settle, or the display mode can flip,
+   after the first pass — re-check when the page is shown again and
+   if the window enters standalone later. */
+window.addEventListener('pageshow',function(){ window.__bwMarkApp(); });
+try{
+  var _bwDmq=window.matchMedia('(display-mode: standalone)');
+  if(_bwDmq&&_bwDmq.addEventListener) _bwDmq.addEventListener('change',function(){ window.__bwMarkApp(); });
+}catch(e){}
 </script>
 <meta name="apple-mobile-web-app-title" content="Borderway"/>
 <meta name="description" content="Borderway International Immigration Services — USA & Canada only. Free Eligibility Analysis based on official IRCC (canada.ca) and US (travel.state.gov / uscis.gov) criteria. Visit, Study, Work, Business, Family / Super Visa. WhatsApp: Arshad Khan Aastik +92 314 9891182."/>
@@ -658,9 +685,13 @@ html,body{overflow-x:clip}
       desktop-like layout viewport (~1000px), where the normal
       max-width breakpoints never match and the site renders its
       small-desktop layout scaled down — crowded header, four-item
-      topbar, two-column services. html.app-phone (set from the
-      physical screen size, which the layout viewport cannot fake)
-      re-applies the phone rules with no width condition. */
+      topbar, two-column services. html.app-phone (set by the head
+      script from the device's touch hardware — coarse pointer +
+      touch points — because Chrome's Desktop-site mode spoofs
+      window.screen along with the viewport) re-applies the phone
+      rules with no width condition. A fuller copy of these rules,
+      plus a pure-CSS standalone + coarse-pointer trigger, sits at
+      the very end of this stylesheet and has the final word. */
 @media (display-mode: standalone),(display-mode: fullscreen),(display-mode: minimal-ui){
   .js-install-app,.pwa-popup,.pwa-popup.manual.show{display:none!important}
 }
@@ -752,6 +783,97 @@ footer ul{line-height:2.15}
 @media(max-width:620px){
   .hstat + .hstat{border-inline-start:0;padding-inline-start:0}
   .section-head{margin-bottom:30px}
+}
+/* ---------- Installed app on a phone: mobile layout, final word ----------
+   This block sits at the very end of the stylesheet on purpose: with
+   the html.is-app.app-phone prefix it out-ranks every desktop rule
+   above it (including the min-width polish block), and the layout-
+   critical declarations carry !important so no desktop media-query
+   rule can win them back. It restates the full phone layout —
+   topbar, header/nav, hero, services, about, eligibility, finder,
+   destinations, team, process, footer, CTA and confirm bar — so
+   coverage does not depend on the earlier app-phone block.
+   Two independent triggers, neither of which consults the layout
+   viewport, window.screen, the user agent, or Chrome's
+   Desktop-site setting (desktop mode rewrites all four):
+   1. the html tags, set by the head script from the device's touch
+      hardware (coarse primary pointer + touch points);
+   2. the pure-CSS media query after this block (standalone
+      display-mode + coarse pointer), which forces the same layout
+      even if scripts are blocked or the tags are missing.
+   Ordinary browser tabs — phone or desktop — never match either
+   trigger, so browser behaviour is exactly as before. */
+html.is-app.app-phone .section{padding:46px 0!important}
+html.is-app.app-phone .topbar{font-size:12.5px}
+html.is-app.app-phone .topbar .container{padding-top:6px;padding-bottom:6px;flex-wrap:nowrap}
+html.is-app.app-phone .topbar .tb-name,html.is-app.app-phone .topbar .tb-guide,html.is-app.app-phone .topbar .tb-right span.hidem{display:none!important}
+html.is-app.app-phone .topbar .tb-right{gap:10px;flex-wrap:nowrap}
+html.is-app.app-phone .nav-inner{gap:8px}
+html.is-app.app-phone .nav-inner>.lang-switch{display:inline-flex!important}
+html.is-app.app-phone .nav-inner>.lang-switch button{padding:5px 8px;font-size:12.5px;min-height:38px}
+html.is-app.app-phone .nav-inner>.lang-switch button[data-setlang="ur"]{font-size:13px;padding-top:3px;padding-bottom:8px}
+html.is-app.app-phone .nav-inner>.auth-slot{flex-shrink:1;min-width:0}
+html.is-app.app-phone .nav-inner>.auth-slot .auth-email{display:none!important}
+html.is-app.app-phone .nav-inner>.auth-slot .auth-when-in{gap:6px!important}
+html.is-app.app-phone .logo-img{height:56px;max-width:160px}
+html.is-app.app-phone .menu-btn{display:flex!important}
+html.is-app.app-phone .nav-links{display:none!important;position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--bar);border:1px solid var(--bar-line);border-radius:var(--radius-lg);padding:10px;flex-direction:column;align-items:stretch;box-shadow:var(--shadow-lg)}
+html.is-app.app-phone .nav-links.open{display:flex!important}
+html.is-app.app-phone .nav-links a{padding:12px}
+html.is-app.app-phone .nav-links .auth-slot-menu{display:flex}
+html.is-app.app-phone .nav-links .lang-switch.in-menu{display:inline-flex}
+html.is-app.app-phone .nav-links a.btn{margin-top:6px}
+html.is-app.app-phone .hero-grid{grid-template-columns:1fr!important;padding-top:36px;padding-bottom:46px;gap:30px}
+html.is-app.app-phone .hero h1{font-size:34px;line-height:1.14}
+html.is-app.app-phone .hero-meta{grid-template-columns:1fr 1fr!important;gap:12px}
+html.is-app.app-phone .hero-meta .hstat:last-child{grid-column:1/-1}
+html.is-app.app-phone .hstat strong{font-size:21px}
+html.is-app.app-phone .hstat + .hstat{border-inline-start:0;padding-inline-start:0}
+html.is-app.app-phone .report-card{padding:20px 18px 16px}
+html.is-app.app-phone .svc-layout{grid-template-columns:1fr!important;gap:30px}
+html.is-app.app-phone .svc-intro{position:static}
+html.is-app.app-phone .svc-row{grid-template-columns:40px 1fr!important}
+html.is-app.app-phone .svc-link{grid-column:2}
+html.is-app.app-phone .ia-grid{grid-template-columns:1fr!important;gap:26px}
+html.is-app.app-phone .ia-photo{max-width:340px}
+html.is-app.app-phone .elig-grid,html.is-app.app-phone .grid2,html.is-app.app-phone .grid3,html.is-app.app-phone .process,html.is-app.app-phone .form-grid,html.is-app.app-phone .f-grid{grid-template-columns:1fr!important}
+html.is-app.app-phone .finder,html.is-app.app-phone .about-band,html.is-app.app-phone .elig-wrap{padding:22px}
+html.is-app.app-phone .footer-grid{grid-template-columns:1fr!important;gap:34px}
+html.is-app.app-phone .footer-top{flex-direction:column;align-items:flex-start}
+html.is-app.app-phone .footer-bottom{flex-direction:column}
+html.is-app.app-phone .cta-band .container{flex-direction:column;align-items:flex-start}
+html.is-app.app-phone .confirm-inner{flex-wrap:wrap}
+html.is-app.app-phone .confirm-actions{width:100%}
+html.is-app.app-phone .app-profile{grid-template-columns:1fr 1fr!important}
+html.is-app.app-phone .auth-slot .btn{padding:8px 11px;font-size:13.5px}
+html.is-app.app-phone .lang-switch button{padding:6px 10px}
+/* Pure-CSS trigger for the same phone layout: a standalone window
+   on a coarse-pointer (touchscreen) device. Desktop mode can widen
+   the viewport and spoof window.screen, but it cannot change the
+   display mode of the app window or the physical pointer type, so
+   this holds even with Desktop site switched on in the browser —
+   and it never fires in a normal browser tab. */
+@media (display-mode: standalone) and (pointer: coarse),(display-mode: fullscreen) and (pointer: coarse),(display-mode: minimal-ui) and (pointer: coarse){
+  .section{padding:46px 0!important}
+  .topbar .container{flex-wrap:nowrap}
+  .topbar .tb-name,.topbar .tb-guide,.topbar .tb-right span.hidem{display:none!important}
+  .nav-inner>.auth-slot .auth-email{display:none!important}
+  .logo-img{height:56px;max-width:160px}
+  .menu-btn{display:flex!important}
+  .nav-links{display:none!important;position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--bar);border:1px solid var(--bar-line);border-radius:var(--radius-lg);padding:10px;flex-direction:column;align-items:stretch;box-shadow:var(--shadow-lg)}
+  .nav-links.open{display:flex!important}
+  .hero-grid{grid-template-columns:1fr!important;padding-top:36px;padding-bottom:46px;gap:30px}
+  .hero h1{font-size:34px;line-height:1.14}
+  .hero-meta{grid-template-columns:1fr 1fr!important}
+  .svc-layout{grid-template-columns:1fr!important;gap:30px}
+  .svc-intro{position:static}
+  .svc-row{grid-template-columns:40px 1fr!important}
+  .ia-grid{grid-template-columns:1fr!important;gap:26px}
+  .elig-grid,.grid2,.grid3,.process,.form-grid,.f-grid{grid-template-columns:1fr!important}
+  .finder,.about-band,.elig-wrap{padding:22px}
+  .footer-grid{grid-template-columns:1fr!important;gap:34px}
+  .cta-band .container{flex-direction:column;align-items:flex-start}
+  .js-install-app,.pwa-popup{display:none!important}
 }
 </style>
 </head>
@@ -2563,12 +2685,13 @@ try{
      became standalone after load. hidePopup is a hoisted
      function declaration below, so calling it from here is safe. */
   function applyAppMode(){
-    var de=document.documentElement;
-    de.classList.add('is-app');
-    try{
-      var sw=window.screen?Math.min(window.screen.width||9999,window.screen.height||9999):9999;
-      if(sw<=600) de.classList.add('app-phone');
-    }catch(e){}
+    /* Tagging is the head script marker's job: it detects the phone
+       from its touch hardware (coarse pointer + touch points),
+       which Chrome's Desktop-site mode cannot fake — it spoofs
+       window.screen, so screen.width must never be tested here.
+       Fall back to the is-app tag alone if the marker is missing. */
+    if(window.__bwMarkApp){ window.__bwMarkApp(); }
+    else{ document.documentElement.classList.add('is-app'); }
     hidePopup();
   }
   function isSmallScreen(){
