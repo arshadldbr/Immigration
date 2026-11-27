@@ -317,6 +317,66 @@
       .note-item .note-text { font-size: 0.94rem; white-space: pre-wrap; word-break: break-word; }
       .note-item .note-date { font-size: 0.78rem; color: var(--ink-faint); margin-top: 3px; }
       .note-item.verdict .note-text { font-weight: 700; }
+      /* ---------- Admin Report (Enhanced) ---------- */
+      .report-card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 14px; padding: 20px 20px 16px;
+      }
+      .report-head { margin-bottom: 6px; }
+      .report-head .r-title {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 700;
+        font-size: 1.18rem; margin: 0;
+      }
+      .report-head .r-sub { color: var(--ink-soft); font-size: 0.88rem; margin: 4px 0 0; }
+      .report-rec {
+        background: var(--paper-2); border-radius: var(--radius);
+        padding: 14px 16px; margin: 14px 0 4px;
+      }
+      .report-rec .r-cat {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 700;
+        font-size: 1.08rem; color: var(--pine); margin: 0;
+      }
+      @media (prefers-color-scheme: dark) { .report-rec .r-cat { color: var(--brass-soft); } }
+      .report-rec .r-why { font-size: 0.92rem; color: var(--ink-soft); margin: 5px 0 0; }
+      .report-block { margin-top: 18px; }
+      .report-block h4 {
+        font-size: 0.76rem; font-weight: 700; letter-spacing: 0.12em;
+        text-transform: uppercase; color: var(--brass); margin: 0 0 8px;
+      }
+      .report-list { margin: 0; padding-left: 20px; font-size: 0.93rem; }
+      .report-list li { margin-bottom: 6px; }
+      .report-list li:last-child { margin-bottom: 0; }
+      .report-list .fig { font-weight: 700; white-space: nowrap; }
+      .check-list { list-style: none; margin: 0; padding: 0; font-size: 0.93rem; }
+      .check-list li {
+        position: relative; padding-left: 26px; margin-bottom: 7px;
+      }
+      .check-list li::before {
+        content: ""; position: absolute; left: 0; top: 3px; width: 14px; height: 14px;
+        border: 1.5px solid var(--brass); border-radius: 4px; background: var(--paper);
+      }
+      .draft-box {
+        background: var(--paper); border: 1px solid var(--line-soft);
+        border-radius: var(--radius); padding: 14px 16px;
+        font-size: 0.93rem; white-space: pre-wrap; word-break: break-word;
+      }
+      .btn-draft-wa {
+        display: inline-flex; align-items: center; gap: 8px; margin-top: 10px;
+        background: transparent; color: var(--ok); border: 1px solid var(--ok);
+        border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 0.88rem;
+        text-decoration: none;
+      }
+      .btn-draft-wa:hover { background: var(--ok-bg); }
+      .report-note {
+        font-size: 0.84rem; color: var(--ink-faint); margin-top: 16px;
+        border-top: 1px solid var(--line-soft); padding-top: 12px;
+      }
+      .report-alert {
+        background: var(--warn-bg); color: var(--warn); border: 1px solid var(--brass-soft);
+        border-radius: var(--radius); padding: 13px 16px; font-size: 0.94rem; font-weight: 600;
+        margin-bottom: 14px;
+      }
+
       .muted { color: var(--ink-faint); font-size: 0.9rem; }
       .inline-msg { font-size: 0.88rem; margin-top: 8px; display: none; }
       .inline-msg.show { display: block; }
@@ -475,6 +535,9 @@
 
         <div class="section-title">Eligibility assessment</div>
         <div id="dAssessment"><p class="muted">Loading assessment…</p></div>
+
+        <div class="section-title">Admin Report (Enhanced)</div>
+        <div id="dReport"><p class="muted">Preparing report…</p></div>
 
         <div class="section-title">Status</div>
         <div class="form-grid">
@@ -826,6 +889,7 @@
           setInline("noteMsg", "", "");
           document.getElementById("dNoteText").value = "";
           document.getElementById("dVerdict").value = "";
+          document.getElementById("dReport").innerHTML = '<p class="muted">Preparing report…</p>';
 
           drawer.classList.add("open");
           scrim.classList.add("open");
@@ -905,9 +969,11 @@
             .then(function (res) {
               if (res.error || !res.data || !res.data.length) {
                 box.innerHTML = '<p class="muted">No eligibility assessment is linked to this lead.</p>';
+                if (activeLead && String(activeLead.id) === String(leadId)) renderReport(activeLead, null);
                 return;
               }
               var a = res.data[0];
+              if (activeLead && String(activeLead.id) === String(leadId)) renderReport(activeLead, a);
               var html = "";
               if (a.result) {
                 html += '<p style="margin:0 0 14px;"><span class="badge result-badge ' + resultBadgeClass(a.result) + '">' +
@@ -951,6 +1017,292 @@
               }
               box.innerHTML = html || '<p class="muted">No eligibility assessment is linked to this lead.</p>';
             });
+        }
+
+        /* ---------------- Admin Report (Enhanced) ----------------
+           Deterministic, rules-based report. No LLM, no live browsing:
+           it matches the lead profile + linked assessment against the
+           verified policy criteria embedded below. */
+        var POLICY = {
+          snapshot: "26 November 2026",
+          canada: {
+            eeFundsSingle: 15263,
+            eeFundsFamily4: 28362,
+            eeFundsNote: "Express Entry proof-of-funds table updated 7 July 2025",
+            studyLiving: 22895,
+            studyLivingNote: "from 1 September 2025",
+            studyLivingNext: 23448,
+            studyLivingNextNote: "from 1 September 2026",
+            superVisaLico2: 38002,
+            superVisaInsurance: 100000,
+            sources: [
+              { label: "IRCC — Proof of funds (Express Entry)", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/proof-funds.html" },
+              { label: "IRCC — Study permit: get the right documents", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents.html" },
+              { label: "IRCC — Parent and grandparent Super Visa", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/parent-grandparent-super-visa.html" }
+            ]
+          },
+          usa: {
+            sources: [
+              { label: "U.S. Department of State — Visitor Visa (B1/B2)", url: "https://travel.state.gov/content/travel/en/us-visas/tourism-visit/visitor.html" },
+              { label: "U.S. Department of State — Student Visa (F-1)", url: "https://travel.state.gov/content/travel/en/us-visas/study/student-visa.html" }
+            ]
+          }
+        };
+
+        function fmtCAD(n) { return "CAD $" + Math.round(n).toLocaleString("en-US"); }
+
+        function parseMoney(v) {
+          if (v === null || v === undefined || v === "") return null;
+          var s = String(v);
+          var out = { amount: null, isPKR: false, raw: s };
+          if (/pkr|lakh|rupee|rs\.?\b/i.test(s)) out.isPKR = true;
+          var m = s.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+          if (m) {
+            out.amount = parseFloat(m[1]);
+            if (/lakh/i.test(s)) out.amount = out.amount * 100000;
+          }
+          return out;
+        }
+
+        function parseNum(v) {
+          if (v === null || v === undefined || v === "") return null;
+          var m = String(v).replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+          return m ? parseFloat(m[1]) : null;
+        }
+
+        function low(v) { return String(v == null ? "" : v).toLowerCase(); }
+
+        function hasRefusal(v) {
+          var s = low(v).trim();
+          if (!s) return false;
+          if (/\bno\b|none|never|nil/.test(s) && !/refus/.test(s)) return false;
+          if (/\bno\b/.test(s) && /refusal/.test(s)) return false;
+          return /yes|refus|reject|denied/.test(s);
+        }
+
+        function hasTravel(v) {
+          var s = low(v).trim();
+          if (!s) return null; // unknown
+          if (/\bno\b|none|never|nil/.test(s)) return false;
+          return true;
+        }
+
+        function catOf(lead) {
+          var vt = low(lead.visa_type);
+          if (/super|family/.test(vt)) return "family";
+          if (/study|student/.test(vt)) return "study";
+          if (/work|job|express|skilled/.test(vt)) return "work";
+          if (/business/.test(vt)) return "business";
+          if (/visit|tourist|visitor/.test(vt)) return "visit";
+          return "other";
+        }
+
+        function isCanada(lead) { return /canada/.test(low(lead.country)); }
+        function isUSA(lead) { return /usa|united states|america|\bus\b/.test(low(lead.country)); }
+
+        function thresholdFor(lead, cat) {
+          if (!isCanada(lead)) return null;
+          if (cat === "study") return { amount: POLICY.canada.studyLiving, label: "Canada study-permit living expenses (" + POLICY.canada.studyLivingNote + ") — tuition is extra", kind: "funds" };
+          if (cat === "work") return { amount: POLICY.canada.eeFundsSingle, label: "Express Entry proof of funds, single applicant (" + POLICY.canada.eeFundsNote + ")", kind: "funds" };
+          if (cat === "family") return { amount: POLICY.canada.superVisaLico2, label: "Super Visa minimum income (LICO) for a family of 2 — this is the host's income in Canada, not the visitor's savings", kind: "lico" };
+          return null;
+        }
+
+        function buildReport(lead, a) {
+          var cat = catOf(lead);
+          var canada = isCanada(lead);
+          var usa = isUSA(lead);
+          var name = lead.name || "the client";
+          var firstName = String(lead.name || "").trim().split(/\s+/)[0] || "there";
+
+          var age = a ? parseNum(a.age) : null;
+          var ielts = a ? parseNum(a.ielts) : null;
+          var funds = a ? parseMoney(a.funds) : null;
+          var refusal = a ? hasRefusal(a.refusal_history) : false;
+          var travel = a ? hasTravel(a.travel_history) : null;
+          var expYears = a ? parseNum(a.experience) : null;
+          var threshold = thresholdFor(lead, cat);
+          var fundsCAD = funds && !funds.isPKR ? funds.amount : null;
+          var shortfall = null;
+          if (threshold && threshold.kind === "funds" && fundsCAD !== null && fundsCAD < threshold.amount) {
+            shortfall = threshold.amount - fundsCAD;
+          }
+
+          /* ----- Recommendation ----- */
+          var catNames = {
+            visit: canada ? "Canada Visitor Visa (TRV)" : (usa ? "USA Visitor Visa (B1/B2)" : "Visitor Visa"),
+            study: canada ? "Canada Study Permit" : (usa ? "USA Student Visa (F-1)" : "Study Visa"),
+            work: canada ? "Canada Work / Express Entry skilled route" : (usa ? "USA Work Visa route" : "Work Visa"),
+            family: canada ? "Canada Super Visa (parents & grandparents)" : "Family Visit Visa",
+            business: canada ? "Canada Business Visitor Visa" : (usa ? "USA Business Visa (B1)" : "Business Visa"),
+            other: (lead.visa_type || "Visa") + " — category to confirm"
+          };
+          var recTitle = catNames[cat];
+          if (refusal) recTitle = "Refusal re-apply first, then " + recTitle;
+          var why = [];
+          why.push("The client asked for " + (lead.visa_type || "a visa") + (lead.country ? " for " + lead.country : "") + " — this stays the primary pathway unless the gaps below make another route clearly stronger.");
+          if (a && a.result) why.push("The linked eligibility analysis rated this profile: " + a.result + ".");
+          if (refusal) why.push("A previous refusal is on record, so the new file must directly answer the earlier refusal reasons before anything else — a repeat of the same file will likely be refused again.");
+          if (cat === "study" && canada) why.push("For a study permit, IRCC weighs the study plan, the school/programme fit and proof of funds together — admission alone is not enough.");
+          if (cat === "family" && canada) why.push("The Super Visa is decided mainly on the host in Canada: their status, their income against LICO, and valid medical insurance.");
+          if (cat === "work" && canada) why.push("Skilled routes are points- and document-driven; education, language and experience evidence decides competitiveness.");
+          if ((cat === "visit" || cat === "business") && (canada || usa)) why.push("Visitor decisions turn on ties to Pakistan, the purpose of travel and a credible, funded trip plan.");
+          if (shortfall !== null) why.push("Funds are currently below the official figure for this route (shortfall " + fmtCAD(shortfall) + "), so strengthening funds comes before filing.");
+
+          /* ----- Strong points & gaps ----- */
+          var strong = [], gaps = [];
+          if (fundsCAD !== null && threshold && threshold.kind === "funds") {
+            if (fundsCAD >= threshold.amount) strong.push("Funds shown (" + fmtCAD(fundsCAD) + ") meet the official figure of " + fmtCAD(threshold.amount) + " for this route.");
+            else gaps.push("Funds shortfall of " + fmtCAD(shortfall) + ": shown " + fmtCAD(fundsCAD) + " against the required " + fmtCAD(threshold.amount) + " (" + threshold.label + ").");
+          }
+          if (funds && funds.isPKR) gaps.push("Funds were stated in PKR (" + funds.raw + ") — convert and document them in CAD terms before quoting any figure to the client.");
+          if (fundsCAD !== null && !threshold && canada) strong.push("Funds shown: " + fmtCAD(fundsCAD) + ". IRCC publishes no single fixed amount for this category — the officer assesses whether the trip is credibly funded.");
+          if (ielts !== null) {
+            if (ielts >= 6.5) strong.push("IELTS " + ielts + " — a solid band for study and skilled routes.");
+            else if (ielts >= 6) strong.push("IELTS " + ielts + " — meets the 6.0 level most Canadian study programmes and skilled routes start from.");
+            else gaps.push("IELTS " + ielts + " is below 6.0, the level most Canadian study programmes and skilled routes expect as a starting point — a gap of " + (6 - ielts).toFixed(1) + " bands. A retake or a language plan should come before filing.");
+          }
+          if (travel === true) strong.push("Has international travel history (" + a.travel_history + ") — supports credibility for visitor routes.");
+          if (travel === false) gaps.push("No international travel history — a weaker point for visitor visas; build the file around strong home ties and a clear, funded purpose instead.");
+          if (refusal) gaps.push("Previous refusal on record (" + a.refusal_history + ") — obtain the refusal reasons (for Canada, GCMS notes where possible) and answer each point with new evidence.");
+          if (age !== null) {
+            if (age >= 18 && age <= 35) strong.push("Age " + age + " — in the favourable range for study and points-based skilled routes.");
+            else if (age > 45 && (cat === "study" || cat === "work")) gaps.push("Age " + age + " — points and study-plan credibility get harder at this age for this route; the justification must be strong.");
+          }
+          if (a && a.education) {
+            if (/master|phd|mphil|m\.?phil/i.test(String(a.education))) strong.push("Education: " + a.education + " — a strong academic base for study and skilled routes.");
+            else if (/bachelor|b\.?sc|b\.?com|bba/i.test(String(a.education))) strong.push("Education: " + a.education + " — a solid base for study and skilled routes.");
+            else if (cat === "study" || cat === "work") gaps.push("Education on record: " + a.education + " — check it meets the programme / route minimum before promising admission or eligibility.");
+          }
+          if (expYears !== null && expYears >= 2 && cat === "work") strong.push("Work experience of " + expYears + " year(s) on record — relevant skilled experience strengthens this route.");
+          if (expYears === 0 && cat === "work") gaps.push("No work experience on record — most skilled work routes need provable skilled experience.");
+          if (!strong.length) strong.push("No verified strong point yet in the data provided — confirm the basics (funds, documents, ties) in the first call.");
+          if (!gaps.length) gaps.push("No major gap detected in the data provided — still verify every document before filing.");
+
+          /* ----- Talking points (exact figures) ----- */
+          var talk = [];
+          if (canada && cat === "study") {
+            talk.push("Canada's official study-permit living-expense figure is <span class=\"fig\">" + fmtCAD(POLICY.canada.studyLiving) + "</span> (" + POLICY.canada.studyLivingNote + "), rising to <span class=\"fig\">" + fmtCAD(POLICY.canada.studyLivingNext) + "</span> " + POLICY.canada.studyLivingNextNote + " — and that is on top of tuition and travel.");
+            if (shortfall !== null) talk.push("Their funds are short by <span class=\"fig\">" + fmtCAD(shortfall) + "</span> right now — say plainly: fix this first and the file becomes much stronger.");
+          }
+          if (canada && cat === "work") {
+            talk.push("Express Entry proof of funds is <span class=\"fig\">" + fmtCAD(POLICY.canada.eeFundsSingle) + "</span> for a single applicant and <span class=\"fig\">" + fmtCAD(POLICY.canada.eeFundsFamily4) + "</span> for a family of four (" + POLICY.canada.eeFundsNote + ") — the money must be readily available and documented.");
+          }
+          if (canada && cat === "family") {
+            talk.push("For the Super Visa, the host in Canada must show income of at least <span class=\"fig\">" + fmtCAD(POLICY.canada.superVisaLico2) + "</span> for a family of two (LICO), plus medical insurance of at least <span class=\"fig\">" + fmtCAD(POLICY.canada.superVisaInsurance) + "</span> valid for one year.");
+            talk.push("The Super Visa allows stays of up to 5 years at a time — a strong point to mention to parents and grandparents.");
+          }
+          if (canada && (cat === "visit" || cat === "business")) {
+            talk.push("Canada publishes no single fixed bank balance for a visitor visa — officers decide on ties, purpose and whether the trip is credibly funded. A complete, consistent file matters more than one large deposit.");
+            talk.push("Recent, regular bank statements (6 months) carry more weight than a sudden large deposit — advise the client not to park borrowed money in the account.");
+          }
+          if (usa) {
+            talk.push("For the USA there is no published fixed funds table like Canada's — the consular officer's interview and the applicant's ties decide the case, so preparation for the interview is part of the service.");
+          }
+          if (refusal) talk.push("Be honest and specific: the previous refusal reasons can be addressed point by point with new evidence — that is exactly what the office meeting is for. Never promise an outcome.");
+          talk.push("Close with the process: documents first, eligibility confirmed in writing, then filing — and remind them the final visa decision rests with the embassy; no one can guarantee it.");
+
+          /* ----- Questions to ask ----- */
+          var qs = [];
+          if (!lead.phone) qs.push("No phone number on record — get a WhatsApp number first.");
+          if (!lead.email) qs.push("No email on record — ask for one for documents and updates.");
+          if (!a.age) qs.push("Age / date of birth is missing.");
+          if (!a.education) qs.push("Education is missing — highest qualification, year and institution.");
+          if (cat === "work" && !a.experience) qs.push("Work experience is missing — years, job titles and whether it is provable (letters, salary slips).");
+          if ((cat === "study" || cat === "work") && !a.ielts) qs.push("IELTS / language score is missing — ask if they have taken it, and when.");
+          if (!a.funds) qs.push("Funds are missing — how much, in whose name, and since when (seasoning matters).");
+          if (!a.travel_history) qs.push("Travel history is missing — which countries, when, and were visas used properly.");
+          if (!a.refusal_history) qs.push("Refusal history is missing — ask directly about any past refusal from any country.");
+          if (cat === "study") qs.push("Which programme and intake are they targeting, and has any admission / offer letter been received?");
+          if (cat === "family" && canada) qs.push("Who is the host in Canada — their status (citizen / PR), family size and income? Has the " + fmtCAD(POLICY.canada.superVisaInsurance) + " insurance been quoted?");
+          if (cat === "visit" || cat === "business") qs.push("What are their ties to Pakistan — job, business, property, family — and what documents prove each one?");
+          if (refusal) qs.push("Do they still have the refusal letter? For Canada, were GCMS notes ever ordered?");
+          qs.push("Who else is travelling / included in the application (spouse, children)? Family size changes the official funds figures.");
+
+          /* ----- Office invite checklist ----- */
+          var check = ["Original passport (current and any previous)", "CNIC copy", "Bank statements — last 6 months, bank-stamped"];
+          if (cat === "study") check.push("All educational documents (degrees, transcripts, marksheets)", "IELTS / English test result, if taken", "Admission or offer letter, if received");
+          if (cat === "work") check.push("Educational documents and any credential assessment (ECA)", "Experience letters and salary slips", "Updated CV");
+          if (cat === "family") check.push("Host's invitation letter and status document from Canada", "Host's income proof (NOA / employment letter)", "Medical insurance quote for " + fmtCAD(POLICY.canada.superVisaInsurance) + ", 1 year");
+          if (cat === "visit" || cat === "business") check.push("Employment letter / business documents proving ties to Pakistan", "Property or asset documents, if any", "Previous passports with travel stamps and visas");
+          if (refusal) check.push("Previous refusal letter and any notes received");
+          check.push("Family registration / marriage documents, if family is included");
+
+          /* ----- WhatsApp draft ----- */
+          var finding = "";
+          if (shortfall !== null) finding = "One thing to fix first: for this route the official funds figure is " + fmtCAD(threshold.amount) + ", and your current funds are short by " + fmtCAD(shortfall) + ". We will show you exactly how to close this gap properly.";
+          else if (refusal) finding = "Because of your previous refusal, the new application must answer the earlier refusal reasons point by point. We will plan that with you in the meeting.";
+          else if (ielts !== null && ielts < 6 && (cat === "study" || cat === "work")) finding = "One point to work on: your IELTS band is " + ielts + ", and this route generally expects 6.0 or above. We will discuss the best way to improve it.";
+          else if (canada && cat === "family") finding = "For the Super Visa, the host in Canada needs income of at least " + fmtCAD(POLICY.canada.superVisaLico2) + " (family of 2) and insurance of " + fmtCAD(POLICY.canada.superVisaInsurance) + " for one year. We will check these with you step by step.";
+          else if (canada && cat === "study") finding = "For a Canada study permit, the official living-expense figure is " + fmtCAD(POLICY.canada.studyLiving) + " (plus tuition). We will review your documents against the full requirement.";
+          else finding = "Your profile has been reviewed, and the next step is a short meeting so we can check your documents and confirm the strongest route for you.";
+          var draft = "Assalam-o-Alaikum " + firstName + ", this is Borderway International.\n\n" +
+            "We have reviewed your enquiry for a " + (lead.country || "") + " " + (lead.visa_type || "visa") + ". " + finding + "\n\n" +
+            "Please visit our office for a detailed consultation. Bring your passport, CNIC and last 6 months' bank statements" +
+            (cat === "study" ? ", plus your educational documents" : "") +
+            (refusal ? ", plus your previous refusal letter" : "") +
+            ".\n\nThe final visa decision rests with the embassy — no result is guaranteed, but a correctly prepared file gives you the best chance.";
+
+          return {
+            recTitle: recTitle, why: why, strong: strong, gaps: gaps,
+            talk: talk, questions: qs, checklist: check, draft: draft
+          };
+        }
+
+        function listHtml(items) {
+          return '<ul class="report-list">' + items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ul>";
+        }
+
+        function renderReport(lead, a) {
+          var box = document.getElementById("dReport");
+          if (!box || !lead) return;
+          var sources = isCanada(lead) ? POLICY.canada.sources : (isUSA(lead) ? POLICY.usa.sources : POLICY.canada.sources.concat(POLICY.usa.sources));
+          var noteHtml = '<p class="report-note">Policy figures verified as of the snapshot dated ' + POLICY.snapshot +
+            ". This report is generated on this page from the lead's profile and the criteria above — for a fresh policy check, use Live Policy Check in the Muse admin app.</p>";
+          var sourcesHtml = '<div class="report-block"><h4>Sources</h4><ul class="source-links" style="margin-top:0;">' +
+            sources.map(function (s) {
+              return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.label) + "</a></li>";
+            }).join("") + "</ul></div>";
+
+          if (!a) {
+            var rows = [
+              ["Name", lead.name], ["Phone", lead.phone], ["Email", lead.email],
+              ["Country", lead.country], ["Visa type", lead.visa_type],
+              ["Status", lead.status || "New"], ["Received", fmtDate(lead.created_at)]
+            ].filter(function (p) { return p[1]; });
+            box.innerHTML = '<div class="report-card">' +
+              '<div class="report-alert">Abhi assessment nahi — pehle eligibility analysis chahiye</div>' +
+              '<div class="report-head"><p class="r-title serif">Basic profile summary</p>' +
+              '<p class="r-sub">No eligibility assessment is linked to this lead yet, so no recommendation, gaps or talking points can be generated. Once the client completes the eligibility analysis on the website, the full enhanced report will appear here automatically.</p></div>' +
+              '<dl class="kv" style="margin-top:14px;">' + rows.map(function (p) {
+                return "<dt>" + esc(p[0]) + "</dt><dd>" + esc(p[1]) + "</dd>";
+              }).join("") + "</dl>" +
+              (lead.message ? '<div class="report-block"><h4>Their message</h4><p style="margin:0;font-size:0.93rem;">' + esc(lead.message) + "</p></div>" : "") +
+              sourcesHtml + noteHtml + "</div>";
+            return;
+          }
+
+          var r = buildReport(lead, a);
+          var digits = String(lead.phone || "").replace(/\D/g, "");
+          var waHtml = "";
+          if (digits) {
+            if (digits.charAt(0) === "0") digits = "92" + digits.slice(1);
+            else if (digits.length === 10) digits = "92" + digits;
+            waHtml = '<a class="btn-draft-wa" href="https://wa.me/' + digits + "?text=" + encodeURIComponent(r.draft) + '" target="_blank" rel="noopener">Send this draft on WhatsApp</a>';
+          }
+          box.innerHTML = '<div class="report-card">' +
+            '<div class="report-head"><p class="r-title serif">Enhanced report for ' + esc(lead.name || "this lead") + '</p>' +
+            '<p class="r-sub">Built from the lead profile, the linked eligibility assessment and the verified policy criteria below. Admin-only — the client does not see this version.</p></div>' +
+            '<div class="report-rec"><p class="r-cat">' + esc(r.recTitle) + '</p>' +
+            r.why.map(function (w) { return '<p class="r-why">' + esc(w) + "</p>"; }).join("") + "</div>" +
+            '<div class="report-block"><h4>Strong points</h4>' + listHtml(r.strong.map(esc)) + "</div>" +
+            '<div class="report-block"><h4>Gaps &amp; risks — fix before filing</h4>' + listHtml(r.gaps.map(esc)) + "</div>" +
+            '<div class="report-block"><h4>Talking points for the client</h4>' + listHtml(r.talk) + "</div>" +
+            '<div class="report-block"><h4>Questions to ask</h4>' + listHtml(r.questions.map(esc)) + "</div>" +
+            '<div class="report-block"><h4>WhatsApp draft</h4><div class="draft-box">' + esc(r.draft) + "</div>" + waHtml + "</div>" +
+            '<div class="report-block"><h4>Office invite checklist — documents to bring</h4><ul class="check-list">' +
+            r.checklist.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("") + "</ul></div>" +
+            sourcesHtml + noteHtml + "</div>";
         }
 
         function loadNotes(leadId) {
