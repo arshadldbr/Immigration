@@ -343,6 +343,37 @@ footer ul{list-style:none;padding:0;margin:0;line-height:2;font-size:14.5px}
 .app-note{background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:14px;color:var(--ink2);margin-top:14px;line-height:1.6;white-space:pre-wrap}
 html[lang="ur"] .app-profile .pf span{letter-spacing:0;text-transform:none;font-size:13.5px}
 html[lang="ur"] .app-toggle,html[lang="ur"] .app-status{line-height:1.9}
+/* ---------- Document upload ---------- */
+.doc-box{margin-top:16px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:start}
+.doc-box h4.doc-h{font-size:16px;margin:0 0 6px}
+.doc-box .doc-sub{font-size:13.5px;color:var(--ink2);margin:0 0 12px;line-height:1.6}
+.doc-drop{display:block;border:1.5px dashed var(--brass);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:var(--surface);transition:border-color .18s ease}
+.doc-drop:hover{border-color:var(--pine)}
+.doc-drop input{display:none}
+.doc-drop .doc-choose{font-weight:700;color:var(--pine);font-size:15px;display:block}
+@media (prefers-color-scheme: dark){ .doc-drop .doc-choose{color:var(--brass-bright)} }
+.doc-drop .doc-hint{font-size:12.5px;color:var(--muted);display:block;margin-top:4px;line-height:1.55}
+.doc-queue{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.doc-qrow{display:flex;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px;align-items:center}
+.doc-qrow .dq-name{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-qrow .dq-stat{white-space:nowrap;color:var(--muted);font-weight:600;font-size:12.5px}
+.doc-qrow .dq-stat.ok{color:var(--green)} .doc-qrow .dq-stat.err{color:var(--red)}
+.doc-h5{font-size:13px;font-weight:800;margin:16px 0 0;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
+.doc-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.doc-item{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.doc-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex-shrink:0}
+.doc-file-ico{width:44px;height:44px;border-radius:6px;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--brass);flex-shrink:0;letter-spacing:.03em}
+.doc-meta{flex:1;min-width:0}
+.doc-meta b{display:block;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-meta span{font-size:12px;color:var(--muted)}
+.doc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.doc-actions a{font-size:12.5px;font-weight:700;color:var(--pine);border:1px solid var(--line);border-radius:999px;padding:6px 11px;background:var(--surface)}
+@media (prefers-color-scheme: dark){ .doc-actions a{color:var(--brass-bright)} }
+.doc-msg{font-size:13px;margin:0;color:var(--ink2)}
+.doc-msg.err{color:var(--red)}
+html[lang="ur"] .doc-box .doc-sub,html[lang="ur"] .doc-drop .doc-hint{font-size:14.5px;line-height:2.0}
+html[lang="ur"] .doc-h5{letter-spacing:0;text-transform:none;font-size:15px}
+html[lang="ur"] .doc-drop .doc-choose{line-height:1.9}
 /* ---------- Account / Sign in ---------- */
 .auth-slot{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .auth-slot .auth-email{font-size:13.5px;font-weight:700;color:var(--bar-ink);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -579,7 +610,7 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
         </div>
         <p id="eligError" style="color:#C0392B;font-size:13.5px;display:none;margin:10px 0 0" data-i18n="err_elig">Please enter your name and WhatsApp number — and make sure every other field is selected.</p>
         <button type="submit" class="btn btn-gold" style="width:100%;margin-top:14px" data-i18n="ef_btn">Run My Free Analysis →</button>
-        <div class="doc-note" data-i18n-html="ef_docnote">📄 <strong>About documents:</strong> Your analysis submission is saved securely. Documents themselves are shared on WhatsApp, not uploaded here — after the analysis, when you contact us on WhatsApp, our team will ask for your documents — passport, bank statements, educational documents, experience letters, etc. — and a complete document-based analysis will be prepared from them.</div>
+        <div class="doc-note" data-i18n-html="ef_docnote">📄 <strong>About documents:</strong> Your analysis submission is saved securely. After your analysis, if you are signed in you can upload your documents right here with your result — passport, bank statements, educational documents, experience letters, etc. Photos are compressed automatically before upload, without losing clarity. You can also share them on WhatsApp if you prefer — either way, a complete document-based analysis will be prepared from them.</div>
       </form>
       <div>
         <div class="elig-result" id="eligResult" role="status" aria-live="polite"></div>
@@ -925,7 +956,7 @@ lbl_refdetail:"انکار کی تفصیل (اگر ہوا تھا — ملک، س�
 ph_refdetail:"مثلاً: Canada visitor visa 2023 میں مسترد ہوا — وجوہات فنڈز اور تعلقات بتائی گئیں...",
 err_elig:"براہ کرم اپنا نام اور WhatsApp نمبر درج کریں — اور یقینی بنائیں کہ باقی تمام فیلڈز منتخب ہیں۔",
 ef_btn:"میرا مفت تجزیہ کریں ←",
-ef_docnote:"📄 <strong>دستاویزات کے بارے میں:</strong> آپ کی تجزیے کی درخواست محفوظ طریقے سے محفوظ ہو جاتی ہے۔ دستاویزات یہاں اپ لوڈ نہیں ہوتیں، وہ WhatsApp پر شیئر ہوتی ہیں — تجزیے کے بعد جب آپ ہم سے WhatsApp پر رابطہ کریں گے، تو ہماری ٹیم آپ سے دستاویزات WhatsApp پر ہی مانگے گی — پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات، تجربے کے خطوط وغیرہ — اور ان کی بنیاد پر دستاویزات پر مبنی مکمل تجزیہ تیار کیا جائے گا۔",
+ef_docnote:"📄 <strong>دستاویزات کے بارے میں:</strong> آپ کی تجزیے کی درخواست محفوظ طریقے سے محفوظ ہو جاتی ہے۔ تجزیے کے بعد، اگر آپ سائن ان ہوں تو اپنی دستاویزات یہیں اپنے نتیجے کے ساتھ اپ لوڈ کر سکتے ہیں — پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات، تجربے کے خطوط وغیرہ۔ تصاویر اپ لوڈ سے پہلے خود بخود compress ہو جاتی ہیں، وضاحت کم کیے بغیر۔ اگر آپ چاہیں تو دستاویزات WhatsApp پر بھی بھیج سکتے ہیں — دونوں صورتوں میں ان کی بنیاد پر دستاویزات پر مبنی مکمل تجزیہ تیار کیا جائے گا۔",
 ob_h:"سرکاری شرائط — ایک نظر میں",
 ob_1:"<strong style=\"color:#fff\">Canada — Express Entry کے لیے فنڈز کا ثبوت (IRCC):</strong> اکیلے درخواست گزار کے لیے کم از کم <strong style=\"color:#fff\">CAD $15,263</strong> (4 افراد کے خاندان کے لیے: $28,362) — IRCC جدول، 7 جولائی 2025 کو اپ ڈیٹ ہوا۔ FSW کا 67 نکاتی انتخابی گرڈ اور CRS درجہ بندی الگ سے لاگو ہوتی ہے۔",
 ob_2:"<strong style=\"color:#fff\">Canada — Study Permit:</strong> DLI سے قبولیت کا خط + پہلے سال کی فیس + رہائش کے اخراجات <strong style=\"color:#fff\">CAD $22,895</strong> (1 ستمبر 2025 سے، Quebec کے علاوہ؛ 1 ستمبر 2026 سے $23,448) + سفر۔",
@@ -1480,7 +1511,7 @@ function renderElig(d,scroll){
     var reqs=(REQS[LANG]||REQS.en)[ds+'|'+d.cat]||[];
     html+='<div class="req-box"><h4>'+t('reqHead')+ds+' '+catLabel+'</h4><ul>';
     reqs.forEach(function(r){ html+='<li>'+r+'</li>'; });
-    html+='</ul></div></div>';
+    html+='</ul></div><div class="doc-mount" data-doc-dest="'+ds+'"></div></div>';
     waParts.push(ds+' '+({'Visit':'Visit / Tourist','Study':'Study','Work':'Work / Skilled','Business':'Business','Family':'Family / Super Visa'})[d.cat]+': '+({'strong':'Strong Profile','improve':'Needs Improvement','notyet':'Not Eligible Yet'})[a.vclass]+' ('+a.score+'/100)');
   });
   var nsKeys=eligNextStepKeys(d);
@@ -1499,6 +1530,7 @@ function renderElig(d,scroll){
   var waUrl='https://wa.me/'+d.person+'?text='+encodeURIComponent(msg);
   document.getElementById('eligWa').href=waUrl;
   var nsWa=box.querySelector('.ns-wa'); if(nsWa) nsWa.href=waUrl;
+  if(window.bwWireDocSlots) window.bwWireDocSlots();
   if(scroll) box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1743,9 +1775,10 @@ window.bwSaveElig=function(d){
   dests.forEach(function(ds){
     var a; try{ a=analyze(ds,d.cat,d); }catch(e){ return; }
     var leadId=bwUuid();
+    (window.__lastLeadIds=window.__lastLeadIds||{})[ds]=leadId;
     var lines=[ds+' — '+CAT_FULL[d.cat]+': '+a.verdict+' ('+a.score+'/100)'];
     a.factors.forEach(function(f){ lines.push('- '+f.name+': '+f.stLabel+' — '+f.text); });
-    sb.from('leads').insert({
+    var leadPromise=sb.from('leads').insert({
       id:leadId, user_id:uid, name:d.name, phone:d.phone, email:email,
       country:ds, visa_type:d.cat, submission_type:'Eligibility analysis',
       message:d.refDetail?('Refusal details: '+d.refDetail):null, status:'New'
@@ -1761,7 +1794,9 @@ window.bwSaveElig=function(d){
         checked_at:new Date().toISOString()
       }).then(function(){ if(window.bwUser&&typeof loadMyApps==='function') loadMyApps(true); },function(){});
     },function(){});
+    (window.__leadReady=window.__leadReady||{})[leadId]=leadPromise;
   });
+  if(window.bwWireDocSlots) window.bwWireDocSlots();
 };
 
 /* ----- Save: Free Assessment (contact) form -> leads ----- */
@@ -1854,6 +1889,7 @@ function appDetailHtml(lead,asmt){
     var waMsg2='Assalam-o-Alaikum, I am following up on my Borderway application — '+lead.country+' — '+(CAT_FULL[lead.visa_type]||lead.visa_type)+(asmt&&asmt.result?(' ('+asmt.result+')'):'')+'.\nMy next steps from my result: '+nsTitlesEn2.join('; ')+'\n\nPlease give me the full details, my documents list and the best route for me.';
     h+=nextStepsHtml(nsKeys2,'https://wa.me/923149891182?text='+encodeURIComponent(waMsg2),'');
   }
+  h+='<div class="doc-mount" data-lead="'+escHtml(lead.id)+'"></div>';
   return h;
 }
 function appRowHtml(lead,asmt){
@@ -1940,6 +1976,198 @@ renderAuth=function(){
 document.querySelectorAll('[data-setlang]').forEach(function(b){
   b.addEventListener('click',function(){ setTimeout(renderMyApps,0); });
 });
+/* ----- Document upload (signed-in users, auto-compress) -----
+   A signed-in user attaches documents to one of their submissions
+   (a lead). Images (JPG/PNG) are compressed in the browser before
+   upload — canvas, long edge max ~2000px, JPEG quality 0.82, so the
+   file gets much smaller while document text stays sharp; if the
+   compressed copy is not actually smaller, the original is kept.
+   PDF / Word files are uploaded untouched. Files go to the private
+   Supabase Storage bucket "documents" at <user_id>/<lead_id>/<name>,
+   then a metadata row is saved in public.documents. The user sees
+   their files (with preview / download signed URLs) in the same
+   widget — in the eligibility result and in My Applications. */
+var DOC_STR={
+en:{title:'Upload documents',sub:'Add the documents for this application — passport, bank statements, educational documents, experience letters. Our team will review them together with your analysis and contact you.',
+signinP:'Only signed-in users can upload documents, so your files stay private and attached to your own application. Sign in to upload.',signinBtn:'Sign In',
+choose:'Choose files to upload',hint:'PDF, JPG, PNG or Word — up to 10 MB per file. Photos are compressed automatically in your browser before upload: much smaller size, text stays sharp.',
+compressing:'Compressing…',uploading:'Uploading',done:'Uploaded',failed:'Failed',
+badType:'File type not allowed — PDF, JPG, PNG or Word only.',tooBig:'Larger than 10 MB — not uploaded.',
+yourDocs:'Your uploaded documents',noDocs:'No documents uploaded yet.',loadingDocs:'Loading your documents…',docsError:'Your documents could not be loaded. Please try again.',
+view:'View',download:'Download',savedNote:'Attached to this application and saved securely — only you and our team can see these files.',
+savingNote:'Your submission is being saved — document upload will be ready here in a moment.',
+unavailable:'Document upload is unavailable right now. Please share your documents on WhatsApp instead.'},
+ur:{title:'دستاویزات اپ لوڈ کریں',sub:'اس درخواست کے لیے دستاویزات شامل کریں — پاسپورٹ، بینک اسٹیٹمنٹس، تعلیمی دستاویزات، تجربے کے خطوط۔ ہماری ٹیم آپ کے تجزیے کے ساتھ ان کا جائزہ لے کر آپ سے رابطہ کرے گی۔',
+signinP:'دستاویزات صرف سائن ان صارفین اپ لوڈ کر سکتے ہیں، تاکہ آپ کی فائلیں نجی رہیں اور آپ کی اپنی درخواست کے ساتھ منسلک ہوں۔ اپ لوڈ کے لیے سائن ان کریں۔',signinBtn:'سائن ان',
+choose:'اپ لوڈ کرنے کے لیے فائلیں منتخب کریں',hint:'PDF، JPG، PNG یا Word — فی فائل زیادہ سے زیادہ 10 MB۔ تصاویر اپ لوڈ سے پہلے آپ کے براؤزر میں خود بخود compress ہو جاتی ہیں: سائز بہت کم، متن بالکل واضح رہتا ہے۔',
+compressing:'Compress ہو رہی ہے…',uploading:'اپ لوڈ ہو رہی ہے',done:'اپ لوڈ ہو گئی',failed:'ناکام',
+badType:'یہ فائل قسم اجازت یافتہ نہیں ہے — صرف PDF، JPG، PNG یا Word۔',tooBig:'10 MB سے بڑی ہے — اپ لوڈ نہیں ہوئی۔',
+yourDocs:'آپ کی اپ لوڈ شدہ دستاویزات',noDocs:'ابھی کوئی دستاویز اپ لوڈ نہیں ہوئی۔',loadingDocs:'آپ کی دستاویزات لوڈ ہو رہی ہیں…',docsError:'آپ کی دستاویزات لوڈ نہیں ہو سکیں۔ براہ کرم دوبارہ کوشش کریں۔',
+view:'دیکھیں',download:'ڈاؤن لوڈ',savedNote:'اس درخواست کے ساتھ منسلک اور محفوظ طریقے سے محفوظ — یہ فائلیں صرف آپ اور ہماری ٹیم دیکھ سکتی ہے۔',
+savingNote:'آپ کی درخواست محفوظ ہو رہی ہے — دستاویزات اپ لوڈ چند لمحوں میں یہاں تیار ہو جائے گا۔',
+unavailable:'دستاویزات اپ لوڈ اس وقت دستیاب نہیں ہے۔ براہ کرم اپنی دستاویزات WhatsApp پر بھیج دیں۔'}
+};
+function dct(k){ return (DOC_STR[LANG]&&DOC_STR[LANG][k])||DOC_STR.en[k]; }
+function fmtBytes(n){ if(n==null||isNaN(n)) return ''; n=Number(n); if(n<1024) return n+' B'; if(n<1024*1024) return Math.round(n/1024)+' KB'; return (n/(1024*1024)).toFixed(1)+' MB'; }
+function sanitizeDocName(name){ return String(name||'file').replace(/[^a-zA-Z0-9._-]+/g,'_'); }
+function docMimeFromExt(ext){ return {pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}[ext]||'application/octet-stream'; }
+function compressImageFile(file){
+  return new Promise(function(resolve){
+    function fallback(){ resolve({blob:file,name:file.name,type:file.type||'image/jpeg'}); }
+    var url;
+    try{ url=URL.createObjectURL(file); }catch(e){ fallback(); return; }
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+        if(!w||!h){ URL.revokeObjectURL(url); fallback(); return; }
+        var scale=Math.min(1,2000/Math.max(w,h));
+        var cw=Math.max(1,Math.round(w*scale)), ch=Math.max(1,Math.round(h*scale));
+        var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+        var ctx=cv.getContext('2d');
+        ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,cw,ch);
+        ctx.imageSmoothingEnabled=true; if('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality='high';
+        ctx.drawImage(img,0,0,cw,ch);
+        URL.revokeObjectURL(url);
+        if(!cv.toBlob){ fallback(); return; }
+        cv.toBlob(function(blob){
+          if(blob&&blob.size<file.size) resolve({blob:blob,name:file.name.replace(/\.[^.]+$/,'')+'.jpg',type:'image/jpeg'});
+          else fallback();
+        },'image/jpeg',0.82);
+      }catch(e){ try{ URL.revokeObjectURL(url); }catch(_e){} fallback(); }
+    };
+    img.onerror=function(){ try{ URL.revokeObjectURL(url); }catch(_e){} fallback(); };
+    img.src=url;
+  });
+}
+function docStorageUpload(path,blob,type){
+  return sb.storage.from('documents').upload(path,blob,{contentType:type,upsert:false}).then(function(up){
+    if(!up.error) return path;
+    if(/exist/i.test(up.error.message||'')){
+      var dot=path.lastIndexOf('.');
+      var p2=(dot>0)?(path.slice(0,dot)+'-'+Date.now()+path.slice(dot)):(path+'-'+Date.now());
+      return sb.storage.from('documents').upload(p2,blob,{contentType:type,upsert:false}).then(function(up2){
+        if(up2.error) throw up2.error;
+        return p2;
+      });
+    }
+    throw up.error;
+  });
+}
+function loadDocList(listEl,leadId){
+  if(!listEl||!sb||!bwUser) return;
+  listEl.innerHTML='<li class="doc-msg">'+dct('loadingDocs')+'</li>';
+  sb.from('documents').select('*').eq('lead_id',leadId).eq('user_id',bwUser.id).order('created_at',{ascending:false}).then(function(res){
+    if(res.error){ listEl.innerHTML='<li class="doc-msg err">'+dct('docsError')+'</li>'; return; }
+    var rows=res.data||[];
+    if(!rows.length){ listEl.innerHTML='<li class="doc-msg" style="color:var(--muted)">'+dct('noDocs')+'</li>'; return; }
+    var paths=rows.map(function(r){ return r.file_path; });
+    var viewP=sb.storage.from('documents').createSignedUrls(paths,3600);
+    var dlP=Promise.all(rows.map(function(r){ return sb.storage.from('documents').createSignedUrl(r.file_path,3600,{download:r.file_name}); }));
+    Promise.all([viewP,dlP]).then(function(rr){
+      var viewUrls={};
+      ((rr[0]&&rr[0].data)||[]).forEach(function(s,i){ if(s&&!s.error&&s.signedUrl) viewUrls[paths[i]]=s.signedUrl; });
+      var dlUrls={};
+      (rr[1]||[]).forEach(function(s,i){ if(s&&!s.error&&s.data&&s.data.signedUrl) dlUrls[paths[i]]=s.data.signedUrl; });
+      listEl.innerHTML=rows.map(function(r){
+        var isImg=/^image\//.test(r.file_type||'');
+        var ext=((r.file_name||'').split('.').pop()||'FILE').toUpperCase().slice(0,4);
+        var dateStr='';
+        if(r.created_at){ var dt=new Date(r.created_at); if(!isNaN(dt.getTime())) dateStr=dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+        var meta=[fmtBytes(r.file_size_bytes),dateStr].filter(Boolean).join(' · ');
+        return '<li class="doc-item">'
+          +(isImg&&viewUrls[r.file_path]?'<img class="doc-thumb" src="'+viewUrls[r.file_path]+'" alt="">':'<span class="doc-file-ico">'+escHtml(ext)+'</span>')
+          +'<span class="doc-meta"><b>'+escHtml(r.file_name)+'</b><span>'+escHtml(meta)+'</span></span>'
+          +'<span class="doc-actions">'
+          +(viewUrls[r.file_path]?'<a href="'+viewUrls[r.file_path]+'" target="_blank" rel="noopener">'+dct('view')+'</a>':'')
+          +(dlUrls[r.file_path]?'<a href="'+dlUrls[r.file_path]+'">'+dct('download')+'</a>':'')
+          +'</span></li>';
+      }).join('');
+    },function(){ listEl.innerHTML='<li class="doc-msg err">'+dct('docsError')+'</li>'; });
+  },function(){ listEl.innerHTML='<li class="doc-msg err">'+dct('docsError')+'</li>'; });
+}
+function uploadOneDoc(file,leadId,ui){
+  var row=document.createElement('li'); row.className='doc-qrow';
+  row.innerHTML='<span class="dq-name"></span><span class="dq-stat"></span>';
+  row.querySelector('.dq-name').textContent=file.name;
+  ui.queueEl.appendChild(row);
+  var stat=row.querySelector('.dq-stat');
+  function setStat(txt,cls){ stat.textContent=txt; stat.className='dq-stat'+(cls?' '+cls:''); }
+  var ext=((file.name||'').split('.').pop()||'').toLowerCase();
+  if(['pdf','jpg','jpeg','png','doc','docx'].indexOf(ext)<0){ setStat(dct('badType'),'err'); return Promise.resolve(); }
+  if(file.size>10*1024*1024){ setStat(dct('tooBig'),'err'); return Promise.resolve(); }
+  var isImg=(ext==='jpg'||ext==='jpeg'||ext==='png');
+  var ready=(window.__leadReady&&window.__leadReady[leadId])?window.__leadReady[leadId]:Promise.resolve();
+  return ready.then(function(){
+    if(isImg) setStat(dct('compressing'));
+    var prep=isImg?compressImageFile(file):Promise.resolve({blob:file,name:file.name,type:file.type||docMimeFromExt(ext)});
+    return prep.then(function(p){
+      var sizeInfo=fmtBytes(file.size)+(p.blob.size!==file.size?(' → '+fmtBytes(p.blob.size)):'');
+      setStat(dct('uploading')+' · '+sizeInfo);
+      var path=bwUser.id+'/'+leadId+'/'+sanitizeDocName(p.name);
+      return docStorageUpload(path,p.blob,p.type).then(function(finalPath){
+        return sb.from('documents').insert({lead_id:leadId,user_id:bwUser.id,file_name:file.name,file_path:finalPath,file_type:p.type,file_size_bytes:p.blob.size});
+      }).then(function(ins){
+        if(ins.error) throw ins.error;
+        setStat(dct('done')+' · '+sizeInfo,'ok');
+        loadDocList(ui.listEl,leadId);
+      });
+    });
+  }).catch(function(err){ setStat(dct('failed')+(err&&err.message?(' — '+err.message):''),'err'); });
+}
+function processDocFiles(files,leadId,ui){
+  var chain=Promise.resolve();
+  Array.prototype.slice.call(files).forEach(function(f){
+    chain=chain.then(function(){ return uploadOneDoc(f,leadId,ui); });
+  });
+  return chain;
+}
+function renderDocWidget(el,leadId){
+  if(!el) return;
+  if(!sb){
+    el.innerHTML='<div class="doc-box"><h4 class="doc-h">'+dct('title')+'</h4><p class="doc-msg err">'+dct('unavailable')+'</p></div>';
+    return;
+  }
+  if(!bwUser){
+    el.innerHTML='<div class="doc-box"><h4 class="doc-h">'+dct('title')+'</h4><p class="doc-sub">'+dct('sub')+'</p><p class="doc-sub">'+dct('signinP')+'</p><button type="button" class="btn btn-blue btn-sm doc-signin-btn">'+dct('signinBtn')+'</button></div>';
+    var sbBtn=el.querySelector('.doc-signin-btn');
+    if(sbBtn) sbBtn.addEventListener('click',function(){ if(typeof openAuth==='function') openAuth(); });
+    return;
+  }
+  if(!leadId){
+    el.innerHTML='<div class="doc-box"><h4 class="doc-h">'+dct('title')+'</h4><p class="doc-sub" style="margin-bottom:0">'+dct('savingNote')+'</p></div>';
+    return;
+  }
+  el.innerHTML='<div class="doc-box"><h4 class="doc-h">'+dct('title')+'</h4><p class="doc-sub">'+dct('sub')+'</p>'
+    +'<label class="doc-drop"><input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><span class="doc-choose">'+dct('choose')+'</span><span class="doc-hint">'+dct('hint')+'</span></label>'
+    +'<ul class="doc-queue"></ul>'
+    +'<h5 class="doc-h5">'+dct('yourDocs')+'</h5><ul class="doc-list"></ul>'
+    +'<p class="doc-msg" style="color:var(--muted);margin-top:12px">'+dct('savedNote')+'</p></div>';
+  var input=el.querySelector('input[type="file"]');
+  var ui={queueEl:el.querySelector('.doc-queue'),listEl:el.querySelector('.doc-list')};
+  input.addEventListener('change',function(){
+    if(input.files&&input.files.length){ processDocFiles(input.files,leadId,ui); input.value=''; }
+  });
+  loadDocList(ui.listEl,leadId);
+}
+/* Wire the upload mounts inside the eligibility result (one per
+   destination block; the lead id comes from the save that just ran). */
+window.bwWireDocSlots=function(){
+  document.querySelectorAll('#eligResult .doc-mount').forEach(function(el){
+    var dest=el.getAttribute('data-doc-dest');
+    var leadId=(window.__lastLeadIds&&window.__lastLeadIds[dest])||null;
+    renderDocWidget(el,leadId);
+  });
+};
+/* Re-wire the result slots whenever the sign-in state changes. */
+var bwRenderAuthDocs=renderAuth;
+renderAuth=function(){ bwRenderAuthDocs(); if(window.bwWireDocSlots) window.bwWireDocSlots(); };
+/* Fill the upload mount inside an open My Applications detail. */
+var bwRenderMyAppsDocs=renderMyApps;
+renderMyApps=function(){
+  bwRenderMyAppsDocs();
+  document.querySelectorAll('#myAppsList .doc-mount').forEach(function(el){ renderDocWidget(el,el.getAttribute('data-lead')); });
+};
 renderAuth();
 </script>
 </body>
