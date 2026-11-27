@@ -2734,6 +2734,20 @@ try{
   /* Pick up the prompt the head script may have captured early. */
   var deferredPrompt=window.__bwBIP||null, autoHideTimer=null;
 
+  /* Installs must come from the Netlify address, not GitHub Pages:
+     Chrome saves its "Desktop site" setting per website address,
+     so an app installed from the GitHub Pages address inherits
+     that setting and opens in desktop view. The Netlify address
+     is a different origin with a fresh setting. So: on the
+     Netlify origin the normal install flow below runs as-is; on
+     any other origin every Download App entry point first sends
+     the visitor to the Netlify page (same tab), where the same
+     buttons then install from there. */
+  var NETLIFY_APP_URL='https://borderway-international.netlify.app/Immigration/';
+  function onNetlifyOrigin(){
+    try{ return window.location.hostname==='borderway-international.netlify.app'; }catch(e){ return false; }
+  }
+
   function isInstalled(){
     try{ if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) return true; }catch(e){}
     if(window.navigator.standalone===true) return true;
@@ -2861,6 +2875,11 @@ try{
       showSteps('<p><strong>The Borderway app is already installed on this device.</strong> Open it from your home screen or app drawer \u2014 it always shows the latest website automatically.</p>');
       return;
     }
+    /* Not on the Netlify address: go there first (same tab) so
+       the app installs from that origin — see the note above.
+       On Netlify itself this branch never runs: no navigation,
+       no reload, the normal prompt/steps flow continues below. */
+    if(!onNetlifyOrigin()){ window.location.href=NETLIFY_APP_URL; return; }
     var bip=deferredPrompt||window.__bwBIP||null;
     if(bip){
       deferredPrompt=null; window.__bwBIP=null;
