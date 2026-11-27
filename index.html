@@ -2122,7 +2122,10 @@ if(LANG==='ur') setLang('ur',true);
    caller may also SELECT, so we confirm success without asking for
    the row back. The lead id is generated here in the browser so the
    matching assessment row can reference it. */
-var BW_SITE_URL='https://arshadldbr.github.io/Immigration/';
+/* Confirmation emails must return the user to the address they signed up
+   from (GitHub Pages, Netlify, or any future host), so the redirect target
+   is the current page URL — never a hardcoded host. */
+var BW_SITE_URL=window.location.origin+window.location.pathname;
 /* Email-confirmation callback detection — must run BEFORE createClient,
    because the Supabase client parses (and clears) the URL hash itself.
    A confirmation link returns with #access_token=...&type=signup */
