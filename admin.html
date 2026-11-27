@@ -417,6 +417,39 @@
         margin-bottom: 14px;
       }
 
+      /* ---------- Admins ---------- */
+      .admins-panel {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 14px; padding: 20px 20px 18px; margin-bottom: 30px;
+      }
+      .admins-panel h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 700;
+        font-size: 1.3rem; margin: 0 0 4px;
+      }
+      .admins-panel .admins-sub { color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 14px; }
+      .admin-list { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+      .admin-list li {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+        background: var(--paper); border: 1px solid var(--line-soft);
+        border-radius: var(--radius); padding: 9px 13px; font-size: 0.88rem;
+      }
+      .admin-list .uid { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; word-break: break-all; }
+      .you-tag {
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+        color: var(--pine); background: var(--ok-bg); border-radius: 999px; padding: 2px 9px;
+        white-space: nowrap;
+      }
+      @media (prefers-color-scheme: dark) { .you-tag { color: var(--ok); } }
+      .add-admin-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+      .add-admin-form .grow { flex: 1 1 240px; }
+      .add-admin-form label { font-size: 0.83rem; font-weight: 600; color: var(--ink-soft); display: block; margin-bottom: 5px; }
+      .add-admin-form input {
+        width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+        border-radius: 8px; background: var(--paper); outline: none;
+      }
+      .add-admin-form input:focus { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(169, 130, 47, 0.18); }
+      .add-admin-form .inline-msg { flex-basis: 100%; margin-top: 2px; }
+
       .muted { color: var(--ink-faint); font-size: 0.9rem; }
       .inline-msg { font-size: 0.88rem; margin-top: 8px; display: none; }
       .inline-msg.show { display: block; }
@@ -516,6 +549,19 @@
 
       <!-- Admin: leads -->
       <section id="viewAdmin" class="hidden">
+        <div class="admins-panel" id="adminsPanel">
+          <h2>Admins</h2>
+          <p class="admins-sub">People who can sign in here and manage leads. To add someone, they must first sign up on this page with their email — then add that email below.</p>
+          <ul class="admin-list" id="adminList"><li class="muted">Loading admins…</li></ul>
+          <form class="add-admin-form" id="addAdminForm" novalidate>
+            <div class="grow">
+              <label for="addAdminEmail">Add admin by email</label>
+              <input type="email" id="addAdminEmail" placeholder="person@example.com" autocomplete="off" />
+            </div>
+            <button type="submit" class="btn-secondary" id="btnAddAdmin">Add admin</button>
+            <div class="inline-msg" id="addAdminMsg" role="status"></div>
+          </form>
+        </div>
         <div class="page-head">
           <h1>Leads</h1>
           <span class="count" id="leadCount"></span>
@@ -819,6 +865,7 @@
           checkAdmin(currentUser).then(function (isAdmin) {
             if (isAdmin) {
               showView("admin");
+              loadAdmins();
               loadLeads();
             } else {
               showView("gate");
@@ -946,6 +993,79 @@
           renderLeads();
         });
         document.getElementById("btnRefresh").addEventListener("click", loadLeads);
+
+        /* ---------------- Admins ----------------
+           The list reads public.admin_users. Adding goes through the
+           add_admin_by_email RPC, which is created once in the Supabase
+           SQL Editor and itself checks that the caller is an admin. */
+        var adminListEl = document.getElementById("adminList");
+        var addAdminMsgEl = document.getElementById("addAdminMsg");
+
+        function setAddAdminMsg(type, text) {
+          addAdminMsgEl.className = "inline-msg" + (text ? " show " + type : "");
+          addAdminMsgEl.textContent = text;
+        }
+
+        function loadAdmins() {
+          adminListEl.innerHTML = '<li class="muted">Loading admins…</li>';
+          sb.from("admin_users").select("user_id").order("user_id", { ascending: true })
+            .then(function (res) {
+              if (res.error) {
+                adminListEl.innerHTML = '<li class="muted">Admins could not be loaded: ' + esc(res.error.message) + "</li>";
+                return;
+              }
+              var rows = res.data || [];
+              if (!rows.length) {
+                adminListEl.innerHTML = '<li class="muted">No admins found.</li>';
+                return;
+              }
+              adminListEl.innerHTML = rows.map(function (r) {
+                var isYou = currentUser && String(r.user_id) === String(currentUser.id);
+                return '<li><span class="uid">' + esc(r.user_id) + "</span>" +
+                  (isYou ? '<span class="you-tag">(You)</span>' : "") + "</li>";
+              }).join("");
+            });
+        }
+
+        document.getElementById("addAdminForm").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var emailInput = document.getElementById("addAdminEmail");
+          var email = emailInput.value.trim();
+          setAddAdminMsg("", "");
+          if (!email) { setAddAdminMsg("error", "Pehle email likhein."); return; }
+          var btn = document.getElementById("btnAddAdmin");
+          btn.disabled = true;
+          sb.rpc("add_admin_by_email", { p_email: email }).then(function (res) {
+            btn.disabled = false;
+            if (res.error) {
+              var em = String(res.error.message || "");
+              if (res.error.code === "PGRST202" || /could not find the function|function[^.]*does not exist/i.test(em)) {
+                setAddAdminMsg("error", "Add-admin function abhi Supabase mein nahi bana — SQL chalayein");
+              } else if (/not authorized/i.test(em)) {
+                setAddAdminMsg("error", "Aap ke paas admin add karne ki ijazat nahi hai.");
+              } else {
+                setAddAdminMsg("error", "Admin add nahi ho saka: " + em);
+              }
+              return;
+            }
+            var result = String(res.data || "");
+            if (result === "ok") {
+              setAddAdminMsg("good", "Admin add ho gaya");
+              emailInput.value = "";
+              loadAdmins();
+            } else if (result === "not_found") {
+              setAddAdminMsg("error", "Is email se koi account nahi — pehle sign up karwayein");
+            } else if (result === "already_admin") {
+              setAddAdminMsg("error", "Ye pehle se admin hai");
+              loadAdmins();
+            } else {
+              setAddAdminMsg("error", "Samajh na aane wala jawab mila: " + result);
+            }
+          }).catch(function (err) {
+            btn.disabled = false;
+            setAddAdminMsg("error", "Admin add nahi ho saka: " + ((err && err.message) || err));
+          });
+        });
 
         /* ---------------- Drawer / detail ---------------- */
         var drawer = document.getElementById("drawer");
