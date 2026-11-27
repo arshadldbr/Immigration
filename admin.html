@@ -424,6 +424,9 @@
     </header>
 
     <main>
+      <!-- Email confirmation callback -->
+      <div class="notice" id="confirmNotice" role="status"></div>
+
       <!-- Loading -->
       <div id="viewLoading">
         <div class="spinner" role="status" aria-label="Loading"></div>
@@ -599,6 +602,27 @@
 
         var SUPABASE_URL = "https://sixecmcrjibhuacwvtgc.supabase.co";
         var SUPABASE_KEY = "sb_publishable_h-GizdS7h_3y9oHkaOEZfw_m8t-zRUv";
+        var ADMIN_PAGE_URL = "https://arshadldbr.github.io/Immigration/admin.html";
+
+        // Email-confirmation callback: Supabase returns the user here with
+        // tokens in the URL hash (#access_token=...&type=signup). Capture
+        // that before the client consumes / we clear the hash.
+        var confirmParams = new URLSearchParams(String(window.location.hash || "").replace(/^#/, ""));
+        var isEmailConfirmation = !!confirmParams.get("access_token") &&
+          (confirmParams.get("type") === "signup" || confirmParams.get("type") === "email" || !confirmParams.get("type"));
+        var confirmNoticeEl = document.getElementById("confirmNotice");
+        function showConfirmNotice() {
+          if (!confirmNoticeEl) return;
+          confirmNoticeEl.className = "notice show good";
+          confirmNoticeEl.textContent = "Aapka email confirm ho gaya — ab sign in karein";
+        }
+        function cleanConfirmHash() {
+          if (!window.location.hash) return;
+          try {
+            window.history.replaceState(null, document.title,
+              window.location.pathname + window.location.search);
+          } catch (e) { window.location.hash = ""; }
+        }
 
         var views = {
           loading: document.getElementById("viewLoading"),
@@ -652,6 +676,7 @@
         tabUp.addEventListener("click", function () { setMode("signup"); });
 
         if (!window.supabase || !window.supabase.createClient) {
+          if (isEmailConfirmation) { showConfirmNotice(); cleanConfirmHash(); }
           showView("auth");
           authSubmit.disabled = true;
           notice(authNotice, "error",
@@ -679,7 +704,10 @@
               // On success, onAuthStateChange takes over.
             });
           } else {
-            sb.auth.signUp({ email: email, password: password }).then(function (res) {
+            sb.auth.signUp({
+              email: email, password: password,
+              options: { emailRedirectTo: ADMIN_PAGE_URL }
+            }).then(function (res) {
               done();
               if (res.error) { notice(authNotice, "error", res.error.message); return; }
               if (res.data && res.data.session) {
@@ -734,8 +762,18 @@
           });
         }
 
-        sb.auth.getSession().then(function (res) { handleSession(res.data.session); });
-        sb.auth.onAuthStateChange(function (_event, session) { handleSession(session); });
+        if (isEmailConfirmation) showConfirmNotice();
+        // Refresh the session explicitly so a just-confirmed user is picked
+        // up straight away; clean the callback tokens from the URL after
+        // Supabase has read them.
+        sb.auth.getSession().then(function (res) {
+          handleSession(res.data.session);
+          if (isEmailConfirmation) { showConfirmNotice(); cleanConfirmHash(); }
+        });
+        sb.auth.onAuthStateChange(function (_event, session) {
+          handleSession(session);
+          if (isEmailConfirmation) showConfirmNotice();
+        });
 
         /* ---------------- Leads ---------------- */
         var leadList = document.getElementById("leadList");
