@@ -417,6 +417,37 @@
         margin-bottom: 14px;
       }
 
+      /* ---------- Documents ---------- */
+      .doc-list { display: flex; flex-direction: column; gap: 12px; }
+      .doc-item {
+        background: var(--surface); border: 1px solid var(--line-soft);
+        border-radius: var(--radius); padding: 14px 16px;
+      }
+      .doc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+      .doc-name { font-weight: 700; font-size: 0.97rem; word-break: break-all; }
+      .doc-meta { color: var(--ink-faint); font-size: 0.82rem; }
+      .doc-preview { margin-top: 10px; }
+      .doc-preview img {
+        max-width: 100%; max-height: 320px; border-radius: 6px;
+        border: 1px solid var(--line-soft); display: block; background: var(--paper-2);
+      }
+      .doc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .btn-doc {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: var(--pine); color: #f6f1e7; border: 0; border-radius: 8px;
+        padding: 8px 14px; font-weight: 600; font-size: 0.87rem; text-decoration: none;
+      }
+      .btn-doc:hover { background: var(--pine-2); }
+      .btn-doc .icon { width: 16px; height: 16px; }
+      .btn-doc-delete {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: transparent; color: var(--danger); border: 1px solid var(--danger);
+        border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 0.87rem;
+      }
+      .btn-doc-delete:hover { background: var(--danger-bg); }
+      .btn-doc-delete:disabled { opacity: 0.6; cursor: wait; }
+      .btn-doc-delete .icon { width: 16px; height: 16px; }
+
       /* ---------- Admins ---------- */
       .admins-panel {
         background: var(--surface); border: 1px solid var(--line);
@@ -627,6 +658,10 @@
 
         <div class="section-title">Admin Report (Enhanced)</div>
         <div id="dReport"><p class="muted">Preparing report…</p></div>
+
+        <div class="section-title">Documents</div>
+        <div id="dDocuments"><p class="muted">Loading documents…</p></div>
+        <div class="inline-msg" id="docsMsg"></div>
 
         <div class="section-title">Status</div>
         <div class="form-grid">
@@ -1112,6 +1147,8 @@
           setInline("verdictMsg", "", "");
           setInline("noteMsg", "", "");
           setInline("deleteMsg", "", "");
+          setInline("docsMsg", "", "");
+          document.getElementById("dDocuments").innerHTML = '<p class="muted">Loading documents…</p>';
           document.getElementById("dNoteText").value = "";
           document.getElementById("dVerdict").value = "";
           document.getElementById("dReport").innerHTML = '<p class="muted">Preparing report…</p>';
@@ -1123,6 +1160,7 @@
 
           loadAssessment(lead.id);
           loadNotes(lead.id);
+          loadDocuments(lead.id);
         }
 
         function closeDrawer() {
@@ -1549,6 +1587,125 @@
                   '<div class="note-date">' + esc(fmtDate(n.created_at)) + "</div></div>";
               }).join("");
             });
+        }
+
+        /* ---------------- Documents ----------------
+           Rows come from public.documents (linked by lead_id). The files
+           themselves live in the private "documents" storage bucket, so
+           previews and open/download links use short-lived signed URLs.
+           Deleting removes the storage file AND the metadata row. */
+        function fmtBytes(n) {
+          if (n === null || n === undefined || n === "" || isNaN(Number(n))) return "";
+          var b = Number(n);
+          if (b < 1024) return b + " B";
+          if (b < 1024 * 1024) return (b / 1024).toFixed(1).replace(/\.0$/, "") + " KB";
+          return (b / (1024 * 1024)).toFixed(2).replace(/\.00$/, "") + " MB";
+        }
+
+        function isImageDoc(doc) {
+          var t = low(doc.file_type);
+          if (t.indexOf("image/") === 0) return true;
+          if (/^(jpe?g|png|gif|webp|bmp)$/.test(t)) return true;
+          return /\.(jpe?g|png|gif|webp|bmp)$/i.test(String(doc.file_name || ""));
+        }
+
+        function loadDocuments(leadId) {
+          var box = document.getElementById("dDocuments");
+          box.innerHTML = '<p class="muted">Loading documents…</p>';
+          sb.from("documents").select("id, lead_id, file_name, file_path, file_type, file_size_bytes, uploaded_at")
+            .eq("lead_id", leadId).order("uploaded_at", { ascending: false })
+            .then(function (res) {
+              if (!activeLead || String(activeLead.id) !== String(leadId)) return;
+              if (res.error) {
+                box.innerHTML = '<p class="muted">Documents could not be loaded: ' + esc(res.error.message) + "</p>";
+                return;
+              }
+              var docs = res.data || [];
+              if (!docs.length) {
+                box.innerHTML = '<p class="muted">Is lead ke koi documents nahi</p>';
+                return;
+              }
+              box.innerHTML = '<div class="doc-list">' + docs.map(function (d) {
+                var metaBits = [];
+                if (d.file_type) metaBits.push(esc(d.file_type));
+                var size = fmtBytes(d.file_size_bytes);
+                if (size) metaBits.push(esc(size));
+                if (d.uploaded_at) metaBits.push("Uploaded " + esc(fmtDate(d.uploaded_at)));
+                return '<div class="doc-item" data-doc-id="' + esc(d.id) + '">' +
+                  '<div class="doc-head"><span class="doc-name">' + esc(d.file_name || "Unnamed file") + "</span>" +
+                  (metaBits.length ? '<span class="doc-meta">' + metaBits.join(" · ") + "</span>" : "") + "</div>" +
+                  '<div class="doc-preview" data-role="preview"><p class="muted" style="margin:0;">Preparing preview…</p></div>' +
+                  '<div class="doc-actions">' +
+                  '<span data-role="open"></span>' +
+                  '<button type="button" class="btn-doc-delete" data-action="delete-doc">' +
+                  '<svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>' +
+                  "Delete document</button>" +
+                  "</div></div>";
+              }).join("") + "</div>";
+
+              docs.forEach(function (d) {
+                var item = box.querySelector('[data-doc-id="' + d.id + '"]');
+                if (!item) return;
+                var previewEl = item.querySelector('[data-role="preview"]');
+                var openEl = item.querySelector('[data-role="open"]');
+                var delBtn = item.querySelector('[data-action="delete-doc"]');
+                delBtn.addEventListener("click", function () { confirmDeleteDocument(d, delBtn); });
+                if (!d.file_path) {
+                  previewEl.innerHTML = '<p class="muted" style="margin:0;">No storage path is recorded for this file.</p>';
+                  return;
+                }
+                sb.storage.from("documents").createSignedUrl(d.file_path, 3600).then(function (sres) {
+                  if (!activeLead || String(activeLead.id) !== String(leadId)) return;
+                  if (sres.error || !sres.data || !sres.data.signedUrl) {
+                    previewEl.innerHTML = '<p class="muted" style="margin:0;">Preview could not be prepared' +
+                      (sres.error ? ": " + esc(sres.error.message) : "") + ".</p>";
+                    return;
+                  }
+                  var url = sres.data.signedUrl;
+                  if (isImageDoc(d)) {
+                    previewEl.innerHTML = '<a href="' + esc(url) + '" target="_blank" rel="noopener">' +
+                      '<img src="' + esc(url) + '" alt="' + esc(d.file_name || "Uploaded document") + '" loading="lazy" /></a>';
+                  } else {
+                    previewEl.innerHTML = "";
+                  }
+                  openEl.innerHTML = '<a class="btn-doc" href="' + esc(url) + '" target="_blank" rel="noopener" download="' + esc(d.file_name || "") + '">' +
+                    '<svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>' +
+                    (isImageDoc(d) ? "Open full size" : "Open / download") + "</a>";
+                });
+              });
+            });
+        }
+
+        function confirmDeleteDocument(doc, btn) {
+          if (!activeLead) return;
+          var leadId = activeLead.id;
+          requestConfirmation(
+            "Delete this document?",
+            "<p>The document <strong>" + esc(doc.file_name || "Unnamed file") + "</strong> will be permanently deleted — both the stored file and its record.</p>" +
+            '<p class="warn">This cannot be undone.</p>',
+            "Delete document",
+            function () {
+              btn.disabled = true;
+              setInline("docsMsg", "", "");
+              var removeFile = doc.file_path
+                ? sb.storage.from("documents").remove([doc.file_path])
+                : Promise.resolve({ error: null });
+              removeFile.then(function (rres) {
+                if (rres && rres.error) throw rres.error;
+                return sb.from("documents").delete().eq("id", doc.id).select("id");
+              }).then(function (res) {
+                if (res.error) throw res.error;
+                if (!res.data || !res.data.length) {
+                  throw new Error("The record was not deleted — your admin permissions may not allow deleting documents.");
+                }
+                setInline("docsMsg", "good", "Document deleted: " + (doc.file_name || "file"));
+                if (activeLead && String(activeLead.id) === String(leadId)) loadDocuments(leadId);
+              }).catch(function (err) {
+                btn.disabled = false;
+                setInline("docsMsg", "error", "Document delete failed: " + deleteErrorText(err));
+              });
+            }
+          );
         }
 
         function syncVerdictSelect(notes) {
