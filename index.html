@@ -363,8 +363,9 @@ footer ul{list-style:none;padding:0;margin:0;line-height:2;font-size:14.5px}
 /* ---------- Install app popup (PWA) — mobile only ----------
    Warm-paper card on the site tokens: deep pine heading, brass rule
    and button. Hidden by default; the script at the end of the body
-   decides when it may appear (small screens, not already installed,
-   not dismissed in the last 7 days, never after install). The paper
+   decides when it may appear (small screens only, and not when the
+   app is already running installed/standalone). It shows on every
+   visit or reload and hides itself after 10 seconds. The paper
    ground never flips with the colour scheme, so its text is pinned
    to the dark ink scale, like the hero. */
 .pwa-popup{position:fixed;left:14px;right:14px;bottom:14px;z-index:130;background:var(--paper);color:#1C2420;border:1px solid var(--line);border-top:4px solid var(--brass);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:20px 48px 20px 20px;display:none}
@@ -2304,11 +2305,9 @@ try{
   var closeBtn=document.getElementById('pwaClose'),
       installBtn=document.getElementById('pwaInstallBtn'),
       stepsEl=document.getElementById('pwaSteps');
-  var DISMISS_KEY='bw-pwa-dismissed', INSTALLED_KEY='bw-pwa-installed', SEVEN_DAYS=7*24*60*60*1000;
-  var deferredPrompt=null;
+  var AUTO_HIDE_MS=10000;
+  var deferredPrompt=null, autoHideTimer=null;
 
-  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
   function isInstalled(){
     try{ if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) return true; }catch(e){}
     return window.navigator.standalone===true;
@@ -2316,16 +2315,20 @@ try{
   function isSmallScreen(){
     try{ return window.matchMedia&&window.matchMedia('(max-width: 768px)').matches; }catch(e){ return window.innerWidth<=768; }
   }
-  function dismissedRecently(){
-    var t=parseInt(lsGet(DISMISS_KEY)||'0',10);
-    return t>0 && (Date.now()-t)<SEVEN_DAYS;
+  function hidePopup(){
+    if(autoHideTimer){ clearTimeout(autoHideTimer); autoHideTimer=null; }
+    popup.classList.remove('show'); popup.hidden=true;
   }
-  function hidePopup(){ popup.classList.remove('show'); popup.hidden=true; }
-  function hideForever(){ lsSet(INSTALLED_KEY,'1'); hidePopup(); }
   function showPopup(){
-    if(isInstalled()||lsGet(INSTALLED_KEY)==='1'||dismissedRecently()||!isSmallScreen()) return;
+    /* Shows on every visit/reload — no dismissal is remembered, so
+       nothing is stored. The only checks kept: small screens, and not
+       already running as the installed app (standalone). Once shown,
+       it hides itself after 10 seconds even if never closed. */
+    if(isInstalled()||!isSmallScreen()) return;
     popup.hidden=false;
     popup.classList.add('show');
+    if(autoHideTimer) clearTimeout(autoHideTimer);
+    autoHideTimer=setTimeout(hidePopup,AUTO_HIDE_MS);
   }
 
   /* Android Chrome fires this when the site is installable — keep the
@@ -2334,12 +2337,9 @@ try{
     e.preventDefault();
     deferredPrompt=e;
   });
-  window.addEventListener('appinstalled',function(){ hideForever(); });
+  window.addEventListener('appinstalled',function(){ hidePopup(); });
 
-  if(closeBtn) closeBtn.addEventListener('click',function(){
-    lsSet(DISMISS_KEY,String(Date.now()));
-    hidePopup();
-  });
+  if(closeBtn) closeBtn.addEventListener('click',function(){ hidePopup(); });
 
   function showSteps(html){
     if(!stepsEl) return;
@@ -2362,7 +2362,7 @@ try{
         if(deferredPrompt.userChoice&&deferredPrompt.userChoice.then){
           deferredPrompt.userChoice.then(function(choice){
             deferredPrompt=null;
-            if(choice&&choice.outcome==='accepted') hideForever();
+            if(choice&&choice.outcome==='accepted') hidePopup();
             else hidePopup();
           },function(){ deferredPrompt=null; });
         } else { deferredPrompt=null; }
@@ -2384,7 +2384,7 @@ try{
     }
   });
 
-  /* Show once, ~1.5 seconds after the page has loaded — mobile only. */
+  /* Show on every load, ~1.5 seconds after the page has loaded — mobile only. */
   window.addEventListener('load',function(){ setTimeout(showPopup,1500); });
   if(document.readyState==='complete') setTimeout(showPopup,1500);
 })();
