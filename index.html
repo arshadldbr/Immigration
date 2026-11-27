@@ -19,24 +19,22 @@ window.addEventListener('appinstalled',function(){ window.__bwBIP=null; });
 /* Installed-app mode, decided before first paint and re-checked as
    the window settles. When the site runs as the installed app
    (standalone window), tag <html> so the stylesheet can (a) remove
-   every Download App button and the install popup, and (b) on a
-   phone force the clean mobile layout — ALWAYS, no matter how the
-   browser was set when the app was installed or is launched.
+   every Download App button and the install popup, and (b) force
+   the clean mobile layout — ALWAYS, no matter how the browser was
+   set when the app was installed or is launched.
 
-   Why the phone test is built on touch hardware: Chrome's
-   "Desktop site" mode rewrites everything a page can normally
-   measure — the user agent, the layout viewport (~980px) AND
-   window.screen (it emulates a desktop display, e.g. 1280px wide).
-   The old test (screen.width <= 600) therefore mirrored the
-   Desktop-site toggle exactly: toggle on = desktop layout inside
-   the app, toggle off = mobile layout. What desktop mode cannot
-   rewrite is the physical input hardware: a phone's primary
-   pointer stays coarse (a touchscreen) and the device keeps its
-   touch points. So phone = coarse primary pointer + touch points,
-   with the classic small-screen test kept only as a second,
-   independent signal. Neither signal consults the reported width,
-   the user agent, or the Desktop-site setting. The marker only
-   ever ADDS the tags, so re-running it is always safe. */
+   There is deliberately NO phone test here any more. Every device
+   signal tried so far — layout viewport, window.screen, user
+   agent, and even the touch hardware (pointer: coarse +
+   maxTouchPoints) — turned out to be rewritten or unreliable
+   under Chrome's "Desktop site" mode, so each version of the test
+   ended up mirroring that toggle: desktop site on = desktop
+   layout inside the app. The one thing desktop mode cannot
+   change is whether the window itself is the installed app, so
+   standalone detection ALONE now decides: installed app = mobile
+   layout, unconditionally. (The class name app-phone is kept from
+   the earlier versions; read it as "app mobile layout".) The
+   marker only ever ADDS the tags, so re-running it is safe. */
 window.__bwMarkApp=function(){
   try{
     var mm=window.matchMedia;
@@ -44,12 +42,7 @@ window.__bwMarkApp=function(){
     if(!app) return false;
     var de=document.documentElement;
     de.classList.add('is-app');
-    var phone=false;
-    try{ phone=!!(mm&&mm('(pointer: coarse)').matches&&(window.navigator.maxTouchPoints||0)>0); }catch(e){}
-    if(!phone){
-      try{ var sw=window.screen?Math.min(window.screen.width||9999,window.screen.height||9999):9999; if(sw<=600) phone=true; }catch(e){}
-    }
-    if(phone) de.classList.add('app-phone');
+    de.classList.add('app-phone');
     return true;
   }catch(e){ return false; }
 };
@@ -681,18 +674,18 @@ html,body{overflow-x:clip}
       standards-compliant browsers; the html.is-app class (set by
       the head script, which also sees iOS's navigator.standalone)
       covers the rest.
-   2. On a phone the app always gets the clean mobile layout.
-      Some phones open the installed window with a wide,
-      desktop-like layout viewport (~1000px), where the normal
-      max-width breakpoints never match and the site renders its
-      small-desktop layout scaled down — crowded header, four-item
-      topbar, two-column services. html.app-phone (set by the head
-      script from the device's touch hardware — coarse pointer +
-      touch points — because Chrome's Desktop-site mode spoofs
-      window.screen along with the viewport) re-applies the phone
-      rules with no width condition. A fuller copy of these rules,
-      plus a pure-CSS standalone + coarse-pointer trigger, sits at
-      the very end of this stylesheet and has the final word. */
+   2. The app always gets the clean mobile layout. Some phones
+      open the installed window with a wide, desktop-like layout
+      viewport (~1000px), where the normal max-width breakpoints
+      never match and the site renders its small-desktop layout
+      scaled down — crowded header, four-item topbar, two-column
+      services. html.app-phone (set by the head script for EVERY
+      standalone window, with no device test of any kind, because
+      Chrome's Desktop-site mode rewrites every device signal a
+      page can measure) re-applies the phone rules with no width
+      condition. A fuller copy of these rules, plus a pure-CSS
+      standalone trigger, sits at the very end of this stylesheet
+      and has the final word. */
 @media (display-mode: standalone),(display-mode: fullscreen),(display-mode: minimal-ui){
   .js-install-app,.pwa-popup,.pwa-popup.manual.show{display:none!important}
 }
@@ -794,14 +787,17 @@ footer ul{line-height:2.15}
    topbar, header/nav, hero, services, about, eligibility, finder,
    destinations, team, process, footer, CTA and confirm bar — so
    coverage does not depend on the earlier app-phone block.
-   Two independent triggers, neither of which consults the layout
-   viewport, window.screen, the user agent, or Chrome's
-   Desktop-site setting (desktop mode rewrites all four):
-   1. the html tags, set by the head script from the device's touch
-      hardware (coarse primary pointer + touch points);
+   Two independent triggers, both keyed on the ONE signal
+   Chrome's Desktop-site mode cannot rewrite — whether this
+   window is the installed app. Neither consults the layout
+   viewport, window.screen, the user agent, the pointer type or
+   the touch points (desktop mode rewrites or fakes all of those,
+   which is why every earlier device test mirrored the toggle):
+   1. the html tags, set by the head script for every standalone
+      window, with no device test at all;
    2. the pure-CSS media query after this block (standalone
-      display-mode + coarse pointer), which forces the same layout
-      even if scripts are blocked or the tags are missing.
+      display-mode alone), which forces the same layout even if
+      scripts are blocked or the tags are missing.
    Ordinary browser tabs — phone or desktop — never match either
    trigger, so browser behaviour is exactly as before. */
 html.is-app.app-phone .section{padding:46px 0!important}
@@ -848,13 +844,14 @@ html.is-app.app-phone .confirm-actions{width:100%}
 html.is-app.app-phone .app-profile{grid-template-columns:1fr 1fr!important}
 html.is-app.app-phone .auth-slot .btn{padding:8px 11px;font-size:13.5px}
 html.is-app.app-phone .lang-switch button{padding:6px 10px}
-/* Pure-CSS trigger for the same phone layout: a standalone window
-   on a coarse-pointer (touchscreen) device. Desktop mode can widen
-   the viewport and spoof window.screen, but it cannot change the
-   display mode of the app window or the physical pointer type, so
-   this holds even with Desktop site switched on in the browser —
-   and it never fires in a normal browser tab. */
-@media (display-mode: standalone) and (pointer: coarse),(display-mode: fullscreen) and (pointer: coarse),(display-mode: minimal-ui) and (pointer: coarse){
+/* Pure-CSS trigger for the same phone layout: a standalone window,
+   full stop — no pointer, touch, width or user-agent condition.
+   Desktop mode can widen the viewport, spoof window.screen and
+   even fake the pointer type, but it cannot change the display
+   mode of the installed app's own window, so this holds even with
+   Desktop site switched on in the browser — and it never fires in
+   a normal browser tab. */
+@media (display-mode: standalone),(display-mode: fullscreen),(display-mode: minimal-ui){
   .section{padding:46px 0!important}
   .topbar .container{flex-wrap:nowrap}
   .topbar .tb-name,.topbar .tb-guide,.topbar .tb-right span.hidem{display:none!important}
@@ -2750,10 +2747,10 @@ try{
      became standalone after load. hidePopup is a hoisted
      function declaration below, so calling it from here is safe. */
   function applyAppMode(){
-    /* Tagging is the head script marker's job: it detects the phone
-       from its touch hardware (coarse pointer + touch points),
-       which Chrome's Desktop-site mode cannot fake — it spoofs
-       window.screen, so screen.width must never be tested here.
+    /* Tagging is the head script marker's job: it tags EVERY
+       standalone window with both classes and runs no device test
+       at all — viewport, screen, user agent, pointer and touch
+       signals are all rewritten under Chrome's Desktop-site mode.
        Fall back to the is-app tag alone if the marker is missing. */
     if(window.__bwMarkApp){ window.__bwMarkApp(); }
     else{ document.documentElement.classList.add('is-app'); }
