@@ -280,6 +280,30 @@ html[lang="ur"] .ns-num{margin-top:6px}
 .team-card .num{font-size:17px;font-weight:800;margin:10px 0 2px;color:var(--ink)}
 .team-card .num a:hover{color:var(--blue)}
 .team-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+/* ---------- Ishfaq Ahmad — video message + introduction ---------- */
+.ia-panel{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--pine);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:30px}
+.ia-grid{display:grid;grid-template-columns:300px 1fr;gap:36px;align-items:start}
+.ia-photo-btn{display:block;width:100%;padding:0;border:0;background:none;cursor:pointer;border-radius:var(--radius-lg);overflow:hidden}
+.ia-photo-btn img{width:100%;height:auto;transition:transform .25s ease}
+.ia-photo-btn:hover img{transform:scale(1.02)}
+.ia-photo-btn:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.ia-name{font-family:var(--font-display);font-size:21px;font-weight:600;margin:14px 0 0;line-height:1.25}
+.ia-hint{font-size:13.5px;font-weight:600;color:var(--pine);margin:7px 0 0;display:flex;gap:7px;align-items:center;line-height:1.5}
+@media (prefers-color-scheme: dark){ .ia-hint{color:var(--brass-bright)} }
+.ia-hint svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ia-watch{font-family:var(--font-display);font-size:20px;font-weight:600;margin:2px 0 12px}
+.ia-video{width:100%;height:auto;display:block;border-radius:var(--radius-lg);background:#000;border:1px solid var(--line)}
+.ia-card{max-width:520px}
+.ia-modal-head{display:flex;gap:16px;align-items:center;margin:0 30px 14px 0}
+[dir="rtl"] .ia-modal-head{margin:0 0 14px 30px}
+.ia-modal-head img{width:76px;height:76px;object-fit:cover;border-radius:50%;border:2px solid var(--brass);flex-shrink:0}
+.ia-modal-head h3{font-size:20px;margin:0;font-family:var(--font-ui)}
+.ia-modal-head .ia-loc{font-size:13px;font-weight:700;color:var(--brass);letter-spacing:.05em;text-transform:uppercase;margin-top:3px}
+.ia-desc{font-family:var(--font-ui);font-size:15.5px;line-height:1.7;color:var(--ink2);margin:0;text-align:left}
+html[lang="ur"] .ia-hint{font-size:14.5px;line-height:1.9}
+html[lang="ur"] .ia-modal-head h3{line-height:1.5}
+@media(max-width:900px){ .ia-grid{grid-template-columns:1fr;gap:26px} .ia-photo-btn{max-width:340px} }
+@media(max-width:620px){ .ia-panel{padding:20px} }
 .faq{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;max-width:880px;margin:0 auto}
 .faq details{border-bottom:1px solid var(--line)} .faq details:last-child{border-bottom:0}
 .faq summary{cursor:pointer;padding:18px 20px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
@@ -745,6 +769,24 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
   </div>
 </div></section>
 
+<!-- ISHFAQ AHMAD — VIDEO MESSAGE -->
+<section class="section" id="ishfaq" style="padding-top:52px"><div class="container">
+  <div class="section-head"><h2 data-i18n="ia_h2">A Message from Ishfaq Ahmad</h2><p data-i18n="ia_sub">Toronto, Canada</p></div>
+  <div class="ia-panel">
+    <div class="ia-grid">
+      <div>
+        <button type="button" class="ia-photo-btn" id="iaPhotoBtn" aria-haspopup="dialog" aria-controls="iaModal"><img src="https://arshadldbr.github.io/Immigration/assets/ishfaq-ahmad.jpg" alt="Ishfaq Ahmad — Toronto, Canada" loading="lazy"></button>
+        <div class="ia-name">Ishfaq Ahmad</div>
+        <p class="ia-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span data-i18n="ia_hint">Click the photo to read his introduction</span></p>
+      </div>
+      <div>
+        <h3 class="ia-watch" data-i18n="ia_watch">Watch his message</h3>
+        <video class="ia-video" controls preload="metadata" playsinline poster="https://arshadldbr.github.io/Immigration/assets/ishfaq-ahmad.jpg" src="https://arshadldbr.github.io/Immigration/assets/ishfaq-ahmad-intro.mp4">Your browser does not support the video player.</video>
+      </div>
+    </div>
+  </div>
+</div></section>
+
 <!-- FAQ -->
 <section class="section" id="faq"><div class="container">
   <div class="section-head"><div class="kicker" data-i18n="faq_kicker">Common Questions</div><h2 data-i18n="faq_h2">Frequently Asked Questions</h2></div>
@@ -829,6 +871,21 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
       <p id="authMsg" class="auth-msg" style="display:none"></p>
       <button type="submit" class="btn btn-blue" id="authSubmit" style="width:100%" data-i18n="auth_signin">Sign In</button>
     </form>
+  </div>
+</div>
+
+<!-- ISHFAQ AHMAD — INTRODUCTION MODAL (introduction stays in English in both language modes) -->
+<div class="auth-modal" id="iaModal" hidden role="dialog" aria-modal="true" aria-labelledby="iaModalName">
+  <div class="auth-backdrop" data-ia-close></div>
+  <div class="auth-card ia-card">
+    <button type="button" class="auth-close" data-ia-close aria-label="Close">✕</button>
+    <div dir="ltr" lang="en">
+      <div class="ia-modal-head">
+        <img src="https://arshadldbr.github.io/Immigration/assets/ishfaq-ahmad.jpg" alt="Ishfaq Ahmad">
+        <div><h3 id="iaModalName">Ishfaq Ahmad</h3><div class="ia-loc">Toronto, Canada</div></div>
+      </div>
+      <p class="ia-desc">Ishfaq Ahmad is a well-known Canadian citizen from Toronto, Canada. For years, he has been guiding people on immigration matters, helping as many people as he could. On the strong insistence of thousands of people and their messages, he came to Pakistan and, together with Arshad Khan Aastik, formed an authentic and experienced team — Borderway International — to guide people through immigration, student visas and visit visas.</p>
+    </div>
   </div>
 </div>
 
@@ -1153,6 +1210,15 @@ ma_out_h:"اپنی درخواستیں دیکھنے کے لیے سائن ان ک�
 ma_out_p:"آپ کی درخواستیں اور اہلیت کے تجزیے آپ کے اکاؤنٹ میں محفوظ ہوتے ہیں، اس ڈیوائس میں نہیں۔ کسی بھی فون یا کمپیوٹر سے سائن ان کریں — وہ آپ کو یہاں مل جائیں گے۔",
 ma_empty_h:"ابھی کوئی درخواست نہیں",
 ma_empty_p:"آپ نے ابھی تک کوئی Eligibility Analysis جمع نہیں کرائی۔ Free Eligibility Analysis سے آغاز کریں — آپ کا نتیجہ خود بخود یہاں محفوظ ہو جائے گا۔"
+});
+
+/* Ishfaq Ahmad section — Urdu for the heading, subtitle and photo hint.
+   His introduction inside the modal stays in English in both modes. */
+Object.assign(UR,{
+ia_h2:"اشفاق احمد کا پیغام",
+ia_sub:"Toronto، Canada",
+ia_hint:"ان کا تعارف پڑھنے کے لیے تصویر پر کلک کریں",
+ia_watch:"ان کا پیغام دیکھیں"
 });
 
 var TITLES={en:"Borderway International — Free Eligibility Analysis | USA & Canada Visa Consultants",ur:"Borderway International — مفت Eligibility Analysis | USA اور Canada ویزا کنسلٹنٹس"};
@@ -1741,6 +1807,14 @@ document.querySelectorAll('.auth-open').forEach(function(b){
 });
 document.querySelectorAll('[data-auth-close]').forEach(function(el){ el.addEventListener('click',closeAuth); });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!authModal.hidden) closeAuth(); });
+
+/* ---------- Ishfaq Ahmad introduction modal ---------- */
+var iaModal=document.getElementById('iaModal'), iaPhotoBtn=document.getElementById('iaPhotoBtn');
+function openIa(){ if(iaModal) iaModal.hidden=false; }
+function closeIa(){ if(iaModal) iaModal.hidden=true; }
+if(iaPhotoBtn) iaPhotoBtn.addEventListener('click',openIa);
+document.querySelectorAll('[data-ia-close]').forEach(function(el){ el.addEventListener('click',closeIa); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&iaModal&&!iaModal.hidden) closeIa(); });
 tabSignIn.addEventListener('click',function(){ setAuthMode('in'); });
 tabSignUp.addEventListener('click',function(){ setAuthMode('up'); });
 document.querySelectorAll('[data-setlang]').forEach(function(b){ b.addEventListener('click',function(){ setAuthMode(authMode); }); });
