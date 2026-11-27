@@ -4,6 +4,11 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="color-scheme" content="light dark"/>
+<link rel="manifest" href="/Immigration/manifest.json"/>
+<meta name="theme-color" content="#0c3b2e"/>
+<link rel="apple-touch-icon" href="/Immigration/assets/icons/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Borderway"/>
 <meta name="description" content="Borderway International Immigration Services — USA & Canada only. Free Eligibility Analysis based on official IRCC (canada.ca) and US (travel.state.gov / uscis.gov) criteria. Visit, Study, Work, Business, Family / Super Visa. WhatsApp: Arshad Khan Aastik +92 314 9891182."/>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiByeD0iMTAiIGZpbGw9IiMwRTNCMkUiLz4KICA8cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHJ4PSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQjA4RDU3IiBzdHJva2Utd2lkdGg9IjMiLz4KICA8dGV4dCB4PSIzMiIgeT0iNDUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCAnVGltZXMgTmV3IFJvbWFuJywgc2VyaWYiIGZvbnQtc2l6ZT0iMzYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkI8L3RleHQ+CiAgPHJlY3QgeD0iMTQiIHk9IjUwIiB3aWR0aD0iMzYiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI0IwOEQ1NyIvPgo8L3N2Zz4K"/>
 <meta property="og:type" content="website"/>
@@ -355,6 +360,30 @@ footer ul{list-style:none;padding:0;margin:0;line-height:2;font-size:14.5px}
 .wa-float{position:fixed;right:18px;bottom:18px;z-index:80;width:58px;height:58px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.28)}
 .wa-float svg{width:30px;height:30px;fill:#fff}
 .wa-ico{width:18px;height:18px;fill:currentColor;flex-shrink:0}
+/* ---------- Install app popup (PWA) — mobile only ----------
+   Warm-paper card on the site tokens: deep pine heading, brass rule
+   and button. Hidden by default; the script at the end of the body
+   decides when it may appear (small screens, not already installed,
+   not dismissed in the last 7 days, never after install). The paper
+   ground never flips with the colour scheme, so its text is pinned
+   to the dark ink scale, like the hero. */
+.pwa-popup{position:fixed;left:14px;right:14px;bottom:14px;z-index:130;background:var(--paper);color:#1C2420;border:1px solid var(--line);border-top:4px solid var(--brass);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:20px 48px 20px 20px;display:none}
+.pwa-popup.show{display:block;animation:pwaIn .35s ease}
+@keyframes pwaIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){ .pwa-popup.show{animation:none} }
+.pwa-popup h3{font-family:var(--font-display);font-size:21px;font-weight:600;color:var(--pine-ink);margin:0 0 6px;line-height:1.25;padding-right:4px}
+.pwa-popup p{margin:0;font-size:14.5px;line-height:1.6;color:#45524B}
+.pwa-popup .pwa-install-btn{margin-top:14px;width:100%}
+.pwa-close{position:absolute;top:10px;right:10px;width:38px;height:38px;min-height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;color:#1C2420;cursor:pointer;font-size:15px;line-height:1;display:grid;place-items:center}
+[dir="rtl"] .pwa-close{right:auto;left:10px}
+[dir="rtl"] .pwa-popup{padding:20px 20px 20px 48px}
+.pwa-steps{display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.pwa-steps.show{display:block}
+.pwa-steps ol{margin:0;padding-left:20px;font-size:14px;line-height:1.65;color:#45524B}
+[dir="rtl"] .pwa-steps ol{padding-left:0;padding-right:20px}
+.pwa-steps strong{color:var(--pine-ink)}
+.pwa-note{margin-top:12px!important;font-size:13px!important;color:#71807A!important}
+@media(min-width:769px){ .pwa-popup{display:none!important} }
 /* ---------- My Applications (signed-in user's own record) ---------- */
 .myapps-panel{max-width:880px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:30px 26px;text-align:center;box-shadow:0 4px 14px rgba(11,36,28,.05)}
 .myapps-panel h3{font-size:21px;margin:0 0 8px}
@@ -871,6 +900,16 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
 </div></footer>
 
 <a class="wa-float" href="https://wa.me/923149891182?text=Assalam-o-Alaikum%2C%20I%20would%20like%20a%20visa%20consultation%20from%20Borderway%20International." target="_blank" rel="noopener" aria-label="Chat on WhatsApp — Arshad Khan Aastik"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5L8.9 6.6C8.7 6.1 8.5 6.2 8.3 6.2H7.6c-.2 0-.6.1-.9.4-.3.4-1.2 1.2-1.2 3s1.2 3.5 1.4 3.7c.2.2 2.4 3.6 5.7 5.1.8.3 1.4.6 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4M12 21.8a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4a9.8 9.8 0 1 1 8.3 4.6m8.3-18A11.8 11.8 0 0 0 12 .2 11.8 11.8 0 0 0 .3 12c0 2.1.5 4.1 1.6 5.9L.1 24l6.3-1.7A11.8 11.8 0 0 0 12 23.8h0A11.8 11.8 0 0 0 20.3 3.8"/></svg></a>
+
+<!-- INSTALL APP POPUP (PWA) — mobile only, shown by the script at the end of the body -->
+<div class="pwa-popup" id="pwaPopup" role="dialog" aria-modal="false" aria-labelledby="pwaTitle" hidden>
+  <button type="button" class="pwa-close" id="pwaClose" aria-label="Close install popup">✕</button>
+  <h3 id="pwaTitle">Mobile user? Download App</h3>
+  <p>Borderway app install karein — website jaisi hi, native app jaisi feeling</p>
+  <button type="button" class="btn btn-gold pwa-install-btn" id="pwaInstallBtn">Download App</button>
+  <div class="pwa-steps" id="pwaSteps" aria-live="polite"></div>
+  <p class="pwa-note">Ye wahi website hai jo app ki shakal mein install hoti hai — website mein jo bhi change hoga, app mein khud-ba-khud aa jayega. Alag se update karne ki zaroorat nahi.</p>
+</div>
 
 <!-- SIGN IN / SIGN UP MODAL -->
 <div class="auth-modal" id="authModal" hidden role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -2245,6 +2284,110 @@ renderMyApps=function(){
   document.querySelectorAll('#myAppsList .doc-mount').forEach(function(el){ renderDocWidget(el,el.getAttribute('data-lead')); });
 };
 renderAuth();
+</script>
+<script>
+/* ---------- PWA: service worker + install popup ----------
+   The installed app is this same website (manifest + service worker
+   are served from the GitHub Pages repo), so every website change
+   reaches app users automatically — no separate update step. */
+try{
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      try{ var _swp=navigator.serviceWorker.register('/Immigration/sw.js'); if(_swp&&_swp.catch) _swp.catch(function(){}); }catch(e){}
+    });
+  }
+}catch(e){}
+
+(function(){
+  var popup=document.getElementById('pwaPopup');
+  if(!popup) return;
+  var closeBtn=document.getElementById('pwaClose'),
+      installBtn=document.getElementById('pwaInstallBtn'),
+      stepsEl=document.getElementById('pwaSteps');
+  var DISMISS_KEY='bw-pwa-dismissed', INSTALLED_KEY='bw-pwa-installed', SEVEN_DAYS=7*24*60*60*1000;
+  var deferredPrompt=null;
+
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  function isInstalled(){
+    try{ if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) return true; }catch(e){}
+    return window.navigator.standalone===true;
+  }
+  function isSmallScreen(){
+    try{ return window.matchMedia&&window.matchMedia('(max-width: 768px)').matches; }catch(e){ return window.innerWidth<=768; }
+  }
+  function dismissedRecently(){
+    var t=parseInt(lsGet(DISMISS_KEY)||'0',10);
+    return t>0 && (Date.now()-t)<SEVEN_DAYS;
+  }
+  function hidePopup(){ popup.classList.remove('show'); popup.hidden=true; }
+  function hideForever(){ lsSet(INSTALLED_KEY,'1'); hidePopup(); }
+  function showPopup(){
+    if(isInstalled()||lsGet(INSTALLED_KEY)==='1'||dismissedRecently()||!isSmallScreen()) return;
+    popup.hidden=false;
+    popup.classList.add('show');
+  }
+
+  /* Android Chrome fires this when the site is installable — keep the
+     event so the Download App button can open the real install prompt. */
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault();
+    deferredPrompt=e;
+  });
+  window.addEventListener('appinstalled',function(){ hideForever(); });
+
+  if(closeBtn) closeBtn.addEventListener('click',function(){
+    lsSet(DISMISS_KEY,String(Date.now()));
+    hidePopup();
+  });
+
+  function showSteps(html){
+    if(!stepsEl) return;
+    stepsEl.innerHTML=html;
+    stepsEl.classList.add('show');
+  }
+  function isIos(){
+    var ua=window.navigator.userAgent||'';
+    return /iPhone|iPad|iPod/i.test(ua)||(window.navigator.platform==='MacIntel'&&window.navigator.maxTouchPoints>1);
+  }
+  function isSafari(){
+    var ua=window.navigator.userAgent||'';
+    return /Safari/i.test(ua)&&!/Chrome|CriOS|FxiOS|EdgiOS|Android/i.test(ua);
+  }
+
+  if(installBtn) installBtn.addEventListener('click',function(){
+    if(deferredPrompt){
+      try{
+        deferredPrompt.prompt();
+        if(deferredPrompt.userChoice&&deferredPrompt.userChoice.then){
+          deferredPrompt.userChoice.then(function(choice){
+            deferredPrompt=null;
+            if(choice&&choice.outcome==='accepted') hideForever();
+            else hidePopup();
+          },function(){ deferredPrompt=null; });
+        } else { deferredPrompt=null; }
+      }catch(e){ deferredPrompt=null; }
+      return;
+    }
+    if(isIos()||isSafari()){
+      showSteps('<ol>'
+        +'<li><strong>Share button dabayein</strong> — browser ke neeche (iPhone) ya oopar (iPad) share wala button.</li>'
+        +'<li>List mein <strong>Add to Home Screen</strong> chunein.</li>'
+        +'<li><strong>Add</strong> dabayein — Borderway app aapki home screen par aa jayegi.</li>'
+        +'</ol>');
+    } else {
+      showSteps('<ol>'
+        +'<li>Browser ka <strong>menu</strong> kholein (aam tor par oopar kone mein hota hai).</li>'
+        +'<li><strong>Add to Home Screen</strong> ya <strong>Install app</strong> chunein.</li>'
+        +'<li>Confirm karein — Borderway app aapki home screen par aa jayegi.</li>'
+        +'</ol>');
+    }
+  });
+
+  /* Show once, ~1.5 seconds after the page has loaded — mobile only. */
+  window.addEventListener('load',function(){ setTimeout(showPopup,1500); });
+  if(document.readyState==='complete') setTimeout(showPopup,1500);
+})();
 </script>
 </body>
 </html>
