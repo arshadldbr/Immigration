@@ -1,0 +1,7 @@
+# Borderway International — second deployment (Netlify) alongside GitHub Pages.
+# Publishes the same site under /Immigration/ so every absolute path
+# (/Immigration/manifest.json, /Immigration/sw.js, /Immigration/assets/...)
+# works identically on both hosts.
+[build]
+  command = "mkdir -p dist/Immigration && cp index.html admin.html manifest.json sw.js dist/Immigration/ && cp -r assets dist/Immigration/"
+  publish = "dist"
