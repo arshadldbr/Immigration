@@ -365,6 +365,23 @@ html[lang="ur"] .app-toggle,html[lang="ur"] .app-status{line-height:1.9}
 .auth-msg.ok{background:#E2F4E9;color:#14632F}
 @media (prefers-color-scheme: dark){ .auth-msg.err{background:#3D1712;color:#F2A49C} .auth-msg.ok{background:#12351F;color:#8FE3AC} }
 @media(max-width:620px){ .auth-slot .auth-email{max-width:110px} }
+/* ---------- Email confirmation banner ---------- */
+.confirm-banner{background:#EAF6EE;border-bottom:1px solid #BFE3CC;color:#12351F}
+@media (prefers-color-scheme: dark){ .confirm-banner{background:#12351F;border-bottom-color:#1E5A34;color:#D9F2E0} }
+.confirm-banner[hidden]{display:none}
+.confirm-inner{display:flex;gap:14px;align-items:flex-start;padding:16px 20px}
+.confirm-icon{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;flex-shrink:0;margin-top:2px}
+.confirm-icon svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.confirm-text{flex:1;min-width:0}
+.confirm-text strong{display:block;font-size:16.5px;line-height:1.35;color:inherit}
+.confirm-text span{display:block;font-size:14.5px;line-height:1.6;margin-top:3px;color:inherit;opacity:.92}
+.confirm-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
+.confirm-close{width:38px;height:38px;min-height:38px;border-radius:10px;border:1px solid rgba(18,53,31,.25);background:transparent;color:inherit;cursor:pointer;font-size:15px;line-height:1;display:grid;place-items:center}
+@media (prefers-color-scheme: dark){ .confirm-close{border-color:rgba(217,242,224,.35)} }
+html[lang="ur"] .confirm-text strong{font-size:18px;line-height:1.9}
+html[lang="ur"] .confirm-text span{font-size:16px;line-height:2.0}
+html[lang="ur"] .confirm-icon{margin-top:8px}
+@media(max-width:620px){ .confirm-inner{flex-wrap:wrap} .confirm-actions{width:100%} }
 /* ---------- Urdu mode: Noto Nastaliq Urdu, readable size & spacing ---------- */
 html[lang="ur"] body{font-family:"Noto Nastaliq Urdu","Public Sans",serif;font-size:18px;line-height:2.0}
 html[lang="ur"] h1,html[lang="ur"] h2,html[lang="ur"] h3,html[lang="ur"] h4{font-family:"Noto Nastaliq Urdu",serif;letter-spacing:0;line-height:1.9;font-weight:700}
@@ -462,6 +479,20 @@ html[lang="ur"] select,html[lang="ur"] input,html[lang="ur"] textarea{line-heigh
     <a href="#eligibility" class="btn btn-blue btn-sm" data-i18n="nav_cta">Free Eligibility Analysis</a>
   </nav>
 </div></header>
+
+<div id="emailConfirmBanner" class="confirm-banner" hidden role="status" aria-live="polite">
+  <div class="container confirm-inner">
+    <span class="confirm-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+    <div class="confirm-text">
+      <strong data-i18n="confirm_title">Email confirmed</strong>
+      <span id="confirmBodyText">Your email has been confirmed successfully — please sign in to continue.</span>
+    </div>
+    <div class="confirm-actions">
+      <button type="button" class="btn btn-blue btn-sm" id="confirmSignInBtn" data-i18n="auth_signin">Sign In</button>
+      <button type="button" class="confirm-close" id="confirmCloseBtn" aria-label="Dismiss this message">✕</button>
+    </div>
+  </div>
+</div>
 
 <main id="home">
 <!-- HERO — editorial, document-led. One conversion path: the eligibility
@@ -808,6 +839,7 @@ auth_title:"آپ کا Borderway اکاؤنٹ",
 auth_sub:"سائن ان کریں تاکہ آپ کی assessment درخواستیں آپ کے اکاؤنٹ میں محفوظ ہوں۔ نئے ہیں؟ مفت اکاؤنٹ بنائیں — ہم آپ کو تصدیق کا لنک ای میل کریں گے۔",
 auth_email:"ای میل",
 auth_password:"پاس ورڈ",
+confirm_title:"ای میل کی تصدیق ہو گئی",
 hero_pill:"مشاورت کی بکنگ جاری ہے — پاکستان سے USA اور Canada",
 hero_h1:"<span class=\"gold\">USA</span> اور <span class=\"sky\">Canada</span> کی طرف آپ کا دروازہ",
 hero_lead:"آپ کے خواب، ہماری رہنمائی — سرحدوں سے آگے آپ کے سفر کی بنیاد۔ Visit، Study، Work، Business اور Family ویزے — ایمانداری سے منصوبہ بندی اور مکمل تیاری کے ساتھ، صرف دو منزلوں پر مکمل توجہ۔",
@@ -1557,6 +1589,18 @@ if(LANG==='ur') setLang('ur',true);
    caller may also SELECT, so we confirm success without asking for
    the row back. The lead id is generated here in the browser so the
    matching assessment row can reference it. */
+var BW_SITE_URL='https://arshadldbr.github.io/Immigration/';
+/* Email-confirmation callback detection — must run BEFORE createClient,
+   because the Supabase client parses (and clears) the URL hash itself.
+   A confirmation link returns with #access_token=...&type=signup */
+var bwEmailConfirmPending=false;
+try{
+  var _bwHash=window.location.hash||'';
+  if(_bwHash){
+    var _bwParams=new URLSearchParams(_bwHash.charAt(0)==='#'?_bwHash.slice(1):_bwHash);
+    if(_bwParams.get('access_token')||_bwParams.get('type')==='signup'||_bwParams.get('type')==='email') bwEmailConfirmPending=true;
+  }
+}catch(e){}
 var sb=null, bwUser=null;
 try{
   if(window.supabase) sb=window.supabase.createClient('https://sixecmcrjibhuacwvtgc.supabase.co','sb_publishable_h-GizdS7h_3y9oHkaOEZfw_m8t-zRUv');
@@ -1577,9 +1621,61 @@ function renderAuth(){
 document.querySelectorAll('.auth-out').forEach(function(b){
   b.addEventListener('click',function(){ if(sb) sb.auth.signOut(); });
 });
+/* ----- Email confirmed banner ----- */
+var CONFIRM_STR={
+en:{bodyOut:'Your email has been confirmed successfully — please sign in to continue.',bodyIn:'Your email has been confirmed and you are now signed in. Welcome to Borderway International.'},
+ur:{bodyOut:'آپ کی ای میل کامیابی سے تصدیق ہو گئی ہے — اب براہ کرم سائن ان کریں۔',bodyIn:'آپ کی ای میل کی تصدیق ہو گئی ہے اور آپ اب سائن ان ہیں۔ Borderway International میں خوش آمدید۔'}
+};
+function cs(k){ return (CONFIRM_STR[LANG]&&CONFIRM_STR[LANG][k])||CONFIRM_STR.en[k]; }
+function cleanConfirmHash(){
+  try{ if(window.location.hash) history.replaceState(null,document.title,window.location.pathname+window.location.search); }catch(e){}
+}
+function updateConfirmBanner(){
+  var bodyEl=document.getElementById('confirmBodyText');
+  if(bodyEl) bodyEl.textContent=bwUser?cs('bodyIn'):cs('bodyOut');
+  var signBtn=document.getElementById('confirmSignInBtn');
+  if(signBtn) signBtn.style.display=bwUser?'none':'';
+}
+function showConfirmBanner(){
+  var banner=document.getElementById('emailConfirmBanner');
+  if(!banner) return;
+  updateConfirmBanner();
+  banner.hidden=false;
+  cleanConfirmHash();
+}
+(function(){
+  var closeBtn=document.getElementById('confirmCloseBtn');
+  if(closeBtn) closeBtn.addEventListener('click',function(){ var b=document.getElementById('emailConfirmBanner'); if(b) b.hidden=true; });
+  var signBtn=document.getElementById('confirmSignInBtn');
+  if(signBtn) signBtn.addEventListener('click',function(){
+    var b=document.getElementById('emailConfirmBanner'); if(b) b.hidden=true;
+    if(typeof openAuth==='function') openAuth();
+  });
+  document.querySelectorAll('[data-setlang]').forEach(function(b){
+    b.addEventListener('click',function(){ setTimeout(function(){ var bn=document.getElementById('emailConfirmBanner'); if(bn&&!bn.hidden) updateConfirmBanner(); },0); });
+  });
+})();
 if(sb){
-  sb.auth.getSession().then(function(r){ bwUser=(r.data&&r.data.session)?r.data.session.user:null; renderAuth(); });
-  sb.auth.onAuthStateChange(function(ev,session){ bwUser=session?session.user:null; renderAuth(); });
+  sb.auth.getSession().then(function(r){
+    bwUser=(r.data&&r.data.session)?r.data.session.user:null;
+    renderAuth();
+    if(bwEmailConfirmPending){ bwEmailConfirmPending=false; showConfirmBanner(); }
+    else if(window.location.hash) cleanConfirmHashIfAuth();
+  });
+  sb.auth.onAuthStateChange(function(ev,session){
+    bwUser=session?session.user:null;
+    renderAuth();
+    if(bwEmailConfirmPending&&(ev==='SIGNED_IN'||session)){ bwEmailConfirmPending=false; showConfirmBanner(); }
+    else { var _bn=document.getElementById('emailConfirmBanner'); if(_bn&&!_bn.hidden) updateConfirmBanner(); }
+  });
+}else if(bwEmailConfirmPending){
+  bwEmailConfirmPending=false; showConfirmBanner();
+}
+function cleanConfirmHashIfAuth(){
+  try{
+    var h=window.location.hash||'';
+    if(h&&(h.indexOf('access_token')!==-1||h.indexOf('type=signup')!==-1)) cleanConfirmHash();
+  }catch(e){}
 }
 renderAuth();
 
@@ -1622,7 +1718,7 @@ authForm.addEventListener('submit',function(e){
   var email=authEmailInput.value.trim(), pass=authPassInput.value;
   if(!email||pass.length<6){ showAuthMsg(as('need'),'err'); return; }
   authSubmit.disabled=true; showAuthMsg(as('busy'),'ok');
-  var p=(authMode==='up') ? sb.auth.signUp({email:email,password:pass}) : sb.auth.signInWithPassword({email:email,password:pass});
+  var p=(authMode==='up') ? sb.auth.signUp({email:email,password:pass,options:{emailRedirectTo:BW_SITE_URL}}) : sb.auth.signInWithPassword({email:email,password:pass});
   p.then(function(res){
     authSubmit.disabled=false;
     if(res.error){ showAuthMsg(res.error.message,'err'); return; }
