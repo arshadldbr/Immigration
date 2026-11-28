@@ -1,9 +1,14 @@
 # GitHub Bridge
 
-One small app that lets **any AI chatbot** edit your GitHub repos — and, when
-a bot refuses, lets **you** paste the bot's files into a web page and sync
-them yourself. No computer, no git commands, no paid plan. Works fully from
-your phone.
+One small app that works as a **connector** between any AI chatbot and your
+GitHub repos. The bot connects **directly** to the bridge, and through the
+bridge it gets access to edit the repo — the bot never sees your GitHub
+token, so the token-security objection disappears. No computer, no git
+commands, no paid plan. Works fully from your phone.
+
+For bots that cannot connect to anything at all, the bridge also has a web
+page where you paste the bot's files and sync them yourself (fallback — see
+below).
 
 ## Cost: Rs 0, forever
 
@@ -11,24 +16,49 @@ your phone.
   day. This bridge makes a handful of requests per sync. You will never hit
   the limit, and Cloudflare cannot bill you without a card on file.
 - **GitHub free account + free personal access token.**
-- **No paid bot needed.** The web-page path works with the **free** versions
-  of ChatGPT, DeepSeek, Claude, Gemini, etc. — you only copy their output.
+- **No paid bot needed.** The direct MCP connection works with the free
+  Claude desktop app and other free MCP clients, and the web-page fallback
+  works with the **free** versions of ChatGPT, DeepSeek, Claude, Gemini,
+  etc. — you only copy their output.
 - Nothing in this design can start charging you. No billing is set up
   anywhere.
 
-## The workflow (the guaranteed path — the web page)
+## The workflow (main path — the bot connects directly)
 
-This is the path that works with **every** bot, every time. No connector,
-no MCP, no setup inside the bot.
+The bridge is a **connector**: the bot connects to it, and it connects to
+GitHub. The bot never handles your GitHub token.
+
+1. Deploy the bridge (steps below) — once.
+2. In your bot, add the bridge as a connector: paste your `/mcp` address
+   and your BRIDGE_KEY as the bearer token. (Exact steps per bot are in the
+   table below.)
+3. Ask the bot to build or change your site/app. It calls the bridge's
+   tools (`list_files`, `read_file`, `write_file`, `delete_file`,
+   `sync_bundle`) and the bridge does the GitHub work with your token.
+4. Done. Old files from the last bundle that are missing now are **deleted
+   automatically**. Unchanged files are left alone. Everything lands in **one
+   commit**.
+
+Why this removes the bot's objection: the bot never sees, stores or sends
+your GitHub token anywhere — the token lives only in the Worker as a
+secret, and the bot only gets narrow tools (read/write/delete files in the
+repos you ticked). The security worry was about the token; the connector
+takes the token out of the bot's hands entirely.
+
+Honest limit: a bot can only connect directly if its platform allows
+external connections (MCP). A bot that cannot connect to anything at all
+(DeepSeek web/app, ChatGPT web free) cannot be connected by ANY app — the
+connection has to come from the bot's side. For those bots, use the web-page
+fallback below.
+
+## Fallback — the web page (for bots that cannot connect at all)
 
 1. Ask any bot to build or change your site/app.
 2. Send it the prompt below (also built into the web page — one tap copies it).
    It tells the bot to output ALL files as ONE JSON bundle.
 3. Copy the bot's answer, open your bridge page, paste it in **section 4B**,
    press **Preview sync**, check the lists, press **Confirm sync**.
-4. Done. Old files from the last bundle that are missing now are **deleted
-   automatically**. Unchanged files are left alone. Everything lands in **one
-   commit**.
+4. Done — same smart sync as above.
 
 ### The prompt to paste to any bot
 
@@ -127,23 +157,23 @@ https://developers.cloudflare.com/workers/get-started/dashboard/
 
 ### Step 3 — Use it
 
-1. Open your bridge address, paste the **BRIDGE_KEY** once (it is saved on
-   your phone), set **Repo** to `Immigration`, tap **Load files**.
-2. Use the **Copy this prompt** button, paste the prompt to any bot, paste
-   the bot's answer back in section 4B, Preview, Confirm sync.
+**Main path — connect a bot:** in your bot, add the `/mcp` address (see the
+table below) with your BRIDGE_KEY, then just ask the bot to change the repo.
 
-## Connecting a bot directly (BONUS — not always reliable)
+**Fallback — web page:** open your bridge address, paste the **BRIDGE_KEY**
+once (it is saved on your phone), set **Repo** to `Immigration`, tap **Load
+files**. Use the **Copy this prompt** button, paste the prompt to any bot,
+paste the bot's answer back in section 4B, Preview, Confirm sync.
 
-The bridge also speaks MCP (remote Streamable HTTP, stateless JSON-RPC 2.0)
+## Connecting a bot directly — the details
+
+The bridge speaks MCP (remote Streamable HTTP, stateless JSON-RPC 2.0)
 at `https://github-bridge.<your-subdomain>.workers.dev/mcp`, plus a small
 REST API (`/api/tree`, `/api/file`, `/api/sync`, header `X-Bridge-Key`).
 Tools: `list_files`, `read_file`, `write_file`, `delete_file`, `sync_bundle`.
 
-**Be honest about this part: MCP and connectors are NOT reliable across
-bots.** Some bots do not have them, and some bots that do still refuse to
-edit a repo even with a token. That is exactly why the web page above is
-the main path — it works with every bot. Direct connection is a bonus for
-the bots that accept it:
+Direct connection works with any bot whose platform allows remote MCP
+servers. What was verified on 28 Nov 2026:
 
 | Bot | Direct connection | Notes |
 |---|---|---|
